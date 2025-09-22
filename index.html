@@ -1,0 +1,1257 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>머니앱 - 가격 비교</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Apple SD Gothic Neo', sans-serif;
+            background: linear-gradient(135deg, #ff6b35 0%, #f7931e 100%);
+            min-height: 100vh;
+            padding: 20px;
+            font-size: 14px;
+        }
+
+        .container {
+            max-width: 400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #ff6b35 0%, #f7931e 100%);
+            color: white;
+            padding: 25px 20px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 22px;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .header p {
+            font-size: 13px;
+            opacity: 0.9;
+        }
+
+        .content {
+            padding: 20px;
+        }
+
+        .tab-buttons {
+            display: flex;
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 4px;
+            margin-bottom: 20px;
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 12px;
+            background: none;
+            border: none;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 500;
+            color: #666;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .tab-btn.active {
+            background: white;
+            color: #ff6b35;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 500;
+            color: #333;
+            font-size: 13px;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 12px 14px;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            font-size: 14px;
+            transition: all 0.2s ease;
+            background: #fafbfc;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #ff6b35;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.1);
+        }
+
+        .form-input:disabled {
+            background: #f1f3f4;
+            color: #666;
+        }
+
+        .unit-display {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .unit-display input {
+            flex: 1;
+        }
+
+        .unit-label {
+            font-size: 12px;
+            color: #666;
+            font-weight: 500;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #ff6b35 0%, #f7931e 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            margin-top: 10px;
+        }
+
+        .btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 15px rgba(255, 107, 53, 0.3);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .comparison-results {
+            margin-top: 20px;
+        }
+
+        .result-item {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 12px;
+            border-left: 4px solid #ff6b35;
+        }
+
+        .result-item.best {
+            background: linear-gradient(135deg, rgba(255, 107, 53, 0.1) 0%, rgba(247, 147, 30, 0.1) 100%);
+            border-left-color: #28a745;
+        }
+
+        .result-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .result-store {
+            font-weight: 600;
+            color: #333;
+            font-size: 14px;
+        }
+
+        .result-price {
+            font-weight: 700;
+            color: #ff6b35;
+            font-size: 15px;
+        }
+
+        .result-details {
+            font-size: 12px;
+            color: #666;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .best-badge {
+            background: #28a745;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+            margin-left: 8px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #666;
+        }
+
+        .history-section {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #e9ecef;
+        }
+
+        .history-title {
+            font-size: 13px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 12px;
+        }
+
+        .history-item {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 8px;
+            font-size: 12px;
+        }
+
+        .history-product {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 4px;
+        }
+
+        .history-details {
+            color: #666;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .input-wrapper {
+            position: relative;
+        }
+
+        .suggestion-box {
+            position: absolute;
+            background: white;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            max-height: 150px;
+            overflow-y: auto;
+            z-index: 1000;
+            width: 100%;
+            margin-top: 2px;
+        }
+
+        .suggestion-item {
+            padding: 10px 14px;
+            cursor: pointer;
+            font-size: 13px;
+            border-bottom: 1px solid #f1f3f4;
+            transition: background 0.2s ease;
+        }
+
+        .suggestion-item:hover {
+            background: #f8f9fa;
+        }
+
+        .suggestion-item:last-child {
+            border-bottom: none;
+        }
+
+        .suggestion-item-with-delete {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .suggestion-text {
+            flex: 1;
+            cursor: pointer;
+        }
+
+        .delete-suggestion-btn {
+            background: #dc3545;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 2px 6px;
+            font-size: 10px;
+            cursor: pointer;
+            margin-left: 8px;
+        }
+
+        .delete-suggestion-btn:hover {
+            background: #a71e2a;
+        }
+
+        .result-actions {
+            margin-top: 10px;
+            display: flex;
+            gap: 8px;
+            justify-content: flex-end;
+        }
+
+        .edit-btn, .delete-btn {
+            padding: 6px 12px;
+            border: none;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .edit-btn {
+            background: #007bff;
+            color: white;
+        }
+
+        .edit-btn:hover {
+            background: #0056b3;
+        }
+
+        .delete-btn {
+            background: #dc3545;
+            color: white;
+        }
+
+        .delete-btn:hover {
+            background: #a71e2a;
+        }
+        .dropdown-arrow {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            color: #999;
+            font-size: 12px;
+        }
+
+        .splash-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #ff6b35 0%, #f7931e 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+        }
+
+        .splash-content {
+            text-align: center;
+            color: white;
+            padding: 40px;
+        }
+
+        .splash-content h1 {
+            font-size: 48px;
+            font-weight: 700;
+            margin-bottom: 30px;
+            animation: fadeInUp 0.8s ease-out;
+        }
+
+        .splash-message {
+            font-size: 16px;
+            font-weight: 400;
+            margin-bottom: 40px;
+            opacity: 0.95;
+            line-height: 1.6;
+            animation: fadeInUp 1s ease-out 0.2s both;
+        }
+
+        .splash-message p {
+            margin-bottom: 8px;
+        }
+
+        .loading-bar {
+            width: 200px;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 2px;
+            margin: 0 auto;
+            overflow: hidden;
+            animation: fadeInUp 1.2s ease-out 0.4s both;
+        }
+
+        .loading-progress {
+            width: 0;
+            height: 100%;
+            background: white;
+            border-radius: 2px;
+            animation: loadingBar 3s ease-out forwards;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes loadingBar {
+            to {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 초기 안내 화면 -->
+    <div id="splash-screen" class="splash-screen">
+        <div class="splash-content">
+            <h1>💰 머니앱</h1>
+            <div class="splash-message">
+                <p>동네마다 제품 가격 차이가 있어요.</p>
+                <p>자주 구입하는 물품의 상품명, 금액을</p>
+                <p>머니앱에 기록하면 [단위 단가]가 나타나요.</p>
+                <p>저렴한 곳을 이용하여</p>
+                <p>매일매일 돈을 버세요.</p>
+            </div>
+            <div class="loading-bar">
+                <div class="loading-progress"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container" id="main-app" style="display: none;">
+        <div class="header">
+            <h1>💰 머니앱</h1>
+            <p>똑똑한 가격 비교로 절약하세요</p>
+        </div>
+        
+        <div class="content">
+            <div class="tab-buttons">
+                <button class="tab-btn active" onclick="switchTab('register')">제품등록</button>
+                <button class="tab-btn" onclick="switchTab('compare')">전체비교</button>
+            </div>
+
+            <!-- 제품 등록 탭 -->
+            <div id="register-tab" class="tab-content active">
+                <div class="form-group">
+                    <label class="form-label">제품명</label>
+                    <div class="input-wrapper">
+                        <input type="text" class="form-input" id="product-name" placeholder="예: 콜라" autocomplete="off">
+                        <span class="dropdown-arrow" onclick="toggleProductList()">▼</span>
+                        <div id="product-suggestions" class="suggestion-box" style="display: none;"></div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">수퍼이름</label>
+                    <div class="input-wrapper">
+                        <input type="text" class="form-input" id="store-name" placeholder="예: 롯데수퍼" autocomplete="off">
+                        <span class="dropdown-arrow" onclick="toggleStoreList()">▼</span>
+                        <div id="store-suggestions" class="suggestion-box" style="display: none;"></div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">상품명</label>
+                    <div class="input-wrapper">
+                        <input type="text" class="form-input" id="brand-name" placeholder="예: 코카콜라" autocomplete="off">
+                        <span class="dropdown-arrow" onclick="toggleBrandList()">▼</span>
+                        <div id="brand-suggestions" class="suggestion-box" style="display: none;"></div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">용량</label>
+                    <div class="unit-display">
+                        <input type="number" class="form-input" id="volume" placeholder="예: 500" style="flex: 2;">
+                        <select class="form-input" id="unit" style="flex: 1; margin-left: 8px;">
+                            <option value="ml">ml</option>
+                            <option value="g">g</option>
+                            <option value="kg">kg</option>
+                            <option value="L">L</option>
+                            <option value="개">개</option>
+                            <option value="팩">팩</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">가격</label>
+                    <div class="unit-display">
+                        <input type="number" class="form-input" id="price" placeholder="예: 1250">
+                        <span class="unit-label">원</span>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">단위단가</label>
+                    <div class="unit-display">
+                        <input type="text" class="form-input" id="unit-price" placeholder="자동 계산됩니다" readonly>
+                        <span class="unit-label" id="unit-price-label">원/ml</span>
+                    </div>
+                </div>
+
+                <button class="btn" onclick="registerProduct()">등록하기</button>
+<!-- 백업/복원 버튼 -->
+                <div style="margin-top: 20px; text-align: center;">
+                    <button onclick="toggleDataManagement()" style="padding: 8px 16px; background: #6c757d; color: white; border: none; border-radius: 6px; font-size: 11px; font-weight: 500;">데이터 관리</button>
+                    <div id="data-management" style="display: none; margin-top: 10px;">
+                        <button onclick="exportData()" style="padding: 10px 16px; background: #28a745; color: white; border: none; border-radius: 8px; font-size: 12px; font-weight: 500; margin-right: 10px;">📤 백업</button>
+                        <button onclick="handleRestore()" style="padding: 10px 16px; background: #dc3545; color: white; border: none; border-radius: 8px; font-size: 12px; font-weight: 500;">📥 복원</button>
+                    </div>
+                </div>
+                <div class="history-section" id="history-section" style="display: none;">
+                    <div class="history-title">최근 등록 내역</div>
+                    <div id="recent-history"></div>
+                </div>
+            </div>
+
+            <!-- 전체 비교 탭 -->
+            <div id="compare-tab" class="tab-content">
+                <div class="form-group">
+                    <label class="form-label">비교할 제품 선택()</label>
+                    <select class="form-input" id="compare-product" onchange="showComparison()">
+                        <option value="">제품을 선택하세요</option>
+                    </select>
+                </div>
+                
+                
+                
+                <div class="comparison-results" id="comparison-results">
+                    <div class="empty-state">
+                        <div style="font-size: 48px; margin-bottom: 16px;">🛒</div>
+                        <p>제품을 선택하고 비교해보세요!</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <input type="file" id="import-file" accept=".json" onchange="importData(event)" style="display: none;">
+    <script>
+        // 전역 변수
+        let products = [];
+        let productNames = new Set();
+        let stores = new Set();
+        let brands = new Set();
+        let editingProductId = null;
+
+        // 로컬스토리지에서 데이터 불러오기
+        function loadData() {
+            try {
+                products = JSON.parse(localStorage.getItem('products') || '[]');
+                productNames = new Set(JSON.parse(localStorage.getItem('productNames') || '[]'));
+                stores = new Set(JSON.parse(localStorage.getItem('stores') || '[]'));
+                brands = new Set(JSON.parse(localStorage.getItem('brands') || '[]'));
+                console.log('데이터 로드 완료:', products.length + '개 제품');
+            } catch (error) {
+                console.error('데이터 로드 실패:', error);
+                products = [];
+                productNames = new Set();
+                stores = new Set();
+                brands = new Set();
+            }
+        }
+
+        // 데이터 저장
+        function saveData() {
+            try {
+                localStorage.setItem('products', JSON.stringify(products));
+                localStorage.setItem('productNames', JSON.stringify([...productNames]));
+                localStorage.setItem('stores', JSON.stringify([...stores]));
+                localStorage.setItem('brands', JSON.stringify([...brands]));
+                console.log('데이터 저장 완료');
+            } catch (error) {
+                console.error('데이터 저장 실패:', error);
+            }
+        }
+
+        // 단위가격 자동 계산 설정
+        function setupCalculation() {
+            const volumeInput = document.getElementById('volume');
+            const priceInput = document.getElementById('price');
+            const unitInput = document.getElementById('unit');
+            const unitPriceInput = document.getElementById('unit-price');
+            const unitPriceLabel = document.getElementById('unit-price-label');
+
+            function calculateUnitPrice() {
+                const volume = parseFloat(volumeInput.value);
+                const price = parseFloat(priceInput.value);
+                const unit = unitInput.value;
+                
+                console.log('계산 중:', { volume, price, unit });
+                
+                if (volume && price && volume > 0 && price > 0) {
+                    const unitPrice = (price / volume).toFixed(2);
+                    unitPriceInput.value = unitPrice;
+                    unitPriceLabel.textContent = `원/${unit}`;
+                    console.log('단위가격 계산됨:', unitPrice + '원/' + unit);
+                } else {
+                    unitPriceInput.value = '';
+                    unitPriceLabel.textContent = `원/${unit}`;
+                }
+            }
+
+            // 즉시 계산 및 이벤트 리스너 등록
+            if (volumeInput && priceInput && unitInput) {
+                volumeInput.addEventListener('input', calculateUnitPrice);
+                priceInput.addEventListener('input', calculateUnitPrice);
+                unitInput.addEventListener('change', calculateUnitPrice);
+                
+                // 페이지 로드시 즉시 계산 시도
+                calculateUnitPrice();
+                
+                console.log('계산 이벤트 리스너 등록 완료');
+            } else {
+                console.error('입력 필드를 찾을 수 없습니다');
+            }
+        }
+
+        // 자동완성 기능 설정
+        function setupAutoComplete() {
+            setupSuggestions('product-name', 'product-suggestions', Array.from(productNames), handleProductSelection);
+            setupSuggestions('store-name', 'store-suggestions', Array.from(stores));
+            setupSuggestions('brand-name', 'brand-suggestions', Array.from(brands));
+        }
+
+        function setupSuggestions(inputId, suggestionsId, dataArray, onSelect = null) {
+            const input = document.getElementById(inputId);
+            const suggestions = document.getElementById(suggestionsId);
+
+            if (!input || !suggestions) return;
+
+            input.addEventListener('input', function() {
+                const value = this.value.toLowerCase();
+                if (value.length === 0) {
+                    suggestions.style.display = 'none';
+                    return;
+                }
+                
+                const matches = dataArray.filter(item => 
+                    item.toLowerCase().includes(value)
+                ).slice(0, 5); // 최대 5개만 표시
+                
+                if (matches.length > 0) {
+                    suggestions.innerHTML = matches.map(item => 
+                        `<div class="suggestion-item" onclick="selectSuggestion('${inputId}', '${item}', ${onSelect ? 'true' : 'false'})">${item}</div>`
+                    ).join('');
+                    suggestions.style.display = 'block';
+                } else {
+                    suggestions.style.display = 'none';
+                }
+            });
+
+            input.addEventListener('blur', function(e) {
+                // 드롭다운 화살표 클릭시에는 닫지 않음
+                if (e.relatedTarget && e.relatedTarget.classList.contains('dropdown-arrow')) {
+                    return;
+                }
+                setTimeout(() => suggestions.style.display = 'none', 200);
+            });
+
+           
+        }
+
+        function selectSuggestion(inputId, value, hasCallback) {
+            document.getElementById(inputId).value = value;
+            document.getElementById(inputId.replace('-name', '-suggestions')).style.display = 'none';
+            
+            if (hasCallback && inputId === 'product-name') {
+                handleProductSelection(value);
+            }
+        }
+
+        function handleProductSelection(productName) {
+            // 해당 제품의 최근 데이터 표시
+            const relatedProducts = products.filter(p => p.productName === productName);
+            if (relatedProducts.length > 0) {
+                const latest = relatedProducts[relatedProducts.length - 1];
+                // 이전 입력 정보를 힌트로 표시할 수 있음
+                console.log('이전 입력된 상품 정보:', latest);
+            }
+        }
+
+        // 제품 등록
+        function registerProduct() {
+            console.log('등록 함수 호출됨');
+            
+            const productName = document.getElementById('product-name').value.trim();
+            const storeName = document.getElementById('store-name').value.trim() || '-';
+            const brandName = document.getElementById('brand-name').value.trim() || '-';
+            const volume = parseFloat(document.getElementById('volume').value) || 0;
+            const price = parseFloat(document.getElementById('price').value) || 0;
+            const unit = document.getElementById('unit').value;
+
+            // 등록 버튼 클릭시 단위단가 계산 및 표시
+            if (volume > 0 && price > 0) {
+                const unitPrice = (price / volume).toFixed(2);
+                document.getElementById('unit-price').value = unitPrice;
+                document.getElementById('unit-price-label').textContent = `원/${unit}`;
+                console.log('단위단가 계산됨:', unitPrice + '원/' + unit);
+            }
+
+            console.log('입력값:', { productName, storeName, brandName, volume, price, unit });
+
+            // 최소 유효성 검사 - 제품명만 필수
+            if (!productName) {
+                alert('제품명을 입력해주세요.');
+                document.getElementById('product-name').focus();
+                return;
+            }
+
+            // 단위가격 계산 (용량과 가격이 있을 때만)
+            let unitPrice = 0;
+            if (volume > 0 && price > 0) {
+                unitPrice = Math.round((price / volume) * 100) / 100;
+            }
+
+            // 새 제품 객체 생성
+            const newProduct = {
+                id: Date.now(),
+                productName: productName,
+                storeName: storeName,
+                brandName: brandName,
+                volume: volume,
+                price: price,
+                unit: unit,
+                unitPrice: unitPrice,
+                createdAt: new Date().toLocaleString()
+            };
+
+            console.log('저장할 제품:', newProduct);
+
+            // 수정 모드일 때 처리
+            if (editingProductId !== null) {
+                const originalProduct = products.find(p => p.id === editingProductId);
+                
+                const hasChanges = originalProduct.productName !== productName ||
+                                 originalProduct.storeName !== storeName ||
+                                 originalProduct.brandName !== brandName ||
+                                 originalProduct.volume !== volume ||
+                                 originalProduct.price !== price ||
+                                 originalProduct.unit !== unit;
+
+                if (hasChanges) {
+                    products = products.filter(p => p.id !== editingProductId);
+                    products.push(newProduct);
+                    productNames.add(productName);
+                    if (storeName !== '-') stores.add(storeName);
+                    if (brandName !== '-') brands.add(brandName);
+                    saveData();
+                    updateCompareOptions();
+                    updateHistory();
+                    setupAutoComplete();
+                    alert('제품이 수정되었습니다!\n단위단가: ' + (unitPrice > 0 ? unitPrice + '원/' + unit : '계산 불가'));
+                    
+                    // 수정 완료 후 자동으로 비교 화면 표시
+                    setTimeout(() => {
+                        document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+                        document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+                        document.querySelectorAll('.tab-btn')[1].classList.add('active');
+                        document.getElementById('compare-tab').classList.add('active');
+                        
+                        document.getElementById('compare-product').value = window.currentSelectedProduct;
+                        showComparison();
+                        window.currentSelectedProduct = null;
+                    }, 1000);
+                } else {
+                    alert('변경된 내용이 없습니다.');
+                    editingProductId = null;
+                    clearForm();
+                    return;
+                }
+                
+                editingProductId = null;
+            } else {
+                products.push(newProduct);
+                productNames.add(productName);
+                if (storeName !== '-') stores.add(storeName);
+                if (brandName !== '-') brands.add(brandName);
+                saveData();
+                updateCompareOptions();
+                updateHistory();
+                setupAutoComplete();
+                alert('제품이 등록되었습니다!\n단위단가: ' + (unitPrice > 0 ? unitPrice + '원/' + unit : '계산 불가'));
+            } // 자동완성 데이터 업데이트
+
+            // 3초 후 폼 초기화 (단위단가를 볼 시간을 줌)
+            setTimeout(() => {
+                clearForm();
+            }, 3000);
+            console.log('등록 완료, 현재 제품 수:', products.length);
+        }
+
+        // 폼 초기화
+        function clearForm() {
+            document.getElementById('product-name').value = '';
+            document.getElementById('store-name').value = '';
+            document.getElementById('brand-name').value = '';
+            document.getElementById('volume').value = '';
+            document.getElementById('price').value = '';
+            document.getElementById('unit').value = 'ml';
+            document.getElementById('unit-price').value = '';
+            document.getElementById('unit-price-label').textContent = '원/ml';
+            
+            // 수정 모드 해제
+            editingProductId = null;
+            
+            // 자동완성 창 숨기기
+            document.querySelectorAll('.suggestion-box').forEach(box => {
+                box.style.display = 'none';
+            });
+            
+            // 첫 번째 필드로 포커스
+            document.getElementById('product-name').focus();
+        }
+
+        // 탭 전환
+        function switchTab(tabName) {
+            // 모든 탭 버튼과 내용 초기화
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            
+            // 선택된 탭 활성화
+            event.target.classList.add('active');
+            document.getElementById(tabName + '-tab').classList.add('active');
+            
+            // 데이터 관리 메뉴 숨기기
+            document.getElementById('data-management').style.display = 'none';
+        }
+
+        // 비교 옵션 업데이트
+        function updateCompareOptions() {
+            const select = document.getElementById('compare-product');
+            const uniqueProducts = [...new Set(products.map(p => p.productName))];
+            
+            select.innerHTML = '<option value="">제품을 선택하세요</option>' + 
+                uniqueProducts.map(product => `<option value="${product}">${product}</option>`).join('');
+        }
+
+        // 최근 등록 내역 업데이트 (사용 안함)
+        function updateHistory() {
+            // 최근 등록 내역을 표시하지 않음
+            const historySection = document.getElementById('history-section');
+            historySection.style.display = 'none';
+        }
+
+        // 가격 비교 표시
+        function showComparison() {
+            const selectedProduct = document.getElementById('compare-product').value;
+            const resultsContainer = document.getElementById('comparison-results');
+            
+            if (!selectedProduct) {
+                resultsContainer.innerHTML = `
+                    <div class="empty-state">
+                        <div style="font-size: 48px; margin-bottom: 16px;">🛒</div>
+                        <p>제품을 선택하고 비교해보세요!</p>
+                    </div>
+                `;
+                return;
+            }
+
+            const relatedProducts = products.filter(p => p.productName === selectedProduct);
+            
+            if (relatedProducts.length === 0) {
+                resultsContainer.innerHTML = `
+                    <div class="empty-state">
+                        <div style="font-size: 48px; margin-bottom: 16px;">😅</div>
+                        <p>등록된 ${selectedProduct} 상품이 없습니다.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            // 단위가격 기준으로 정렬
+            relatedProducts.sort((a, b) => a.unitPrice - b.unitPrice);
+            
+            resultsContainer.innerHTML = relatedProducts.map((product, index) => `
+                <div class="result-item ${index === 0 && product.unitPrice > 0 ? 'best' : ''}">
+                    <div class="result-header">
+                        <div>
+                            <span class="result-store">${product.storeName}</span>
+                            ${index === 0 && product.unitPrice > 0 ? '<span class="best-badge">최저가</span>' : ''}
+                        </div>
+                        <div class="result-price">${product.unitPrice > 0 ? product.unitPrice + '원/' + (product.unit || 'ml') : '가격정보 없음'}</div>
+                    </div>
+                    <div class="result-details">
+                        <span>${product.brandName} ${product.volume > 0 ? product.volume + (product.unit || 'ml') : ''}</span>
+                        <span>${product.price > 0 ? product.price + '원' : '가격정보 없음'}</span>
+                    </div>
+                    <div class="result-actions">
+                        <button class="edit-btn" data-id="${product.id}" type="button">수정</button>
+                        <button class="delete-btn" data-id="${product.id}" type="button">삭제</button>
+                    </div>
+                </div>
+            `).join('');
+            
+            // 버튼 이벤트 리스너 추가
+            resultsContainer.querySelectorAll('.edit-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const productId = parseInt(this.getAttribute('data-id'));
+                    editProduct(productId);
+                });
+            });
+            
+            resultsContainer.querySelectorAll('.delete-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const productId = parseInt(this.getAttribute('data-id'));
+                    deleteProduct(productId);
+                });
+            });
+        }
+
+        // 제품 수정
+        function editProduct(productId) {
+            console.log('수정 함수 호출, ID:', productId);
+            const product = products.find(p => p.id === productId);
+            if (!product) {
+                alert('제품을 찾을 수 없습니다.');
+                return;
+            }
+
+            // 현재 값들을 입력 폼에 채우기
+            document.getElementById('product-name').value = product.productName || '';
+            document.getElementById('store-name').value = product.storeName === '-' ? '' : product.storeName;
+            document.getElementById('brand-name').value = product.brandName === '-' ? '' : product.brandName;
+            document.getElementById('volume').value = product.volume || '';
+            document.getElementById('price').value = product.price || '';
+            document.getElementById('unit').value = product.unit || 'ml';
+            
+            // 단위단가 표시
+            if (product.unitPrice > 0) {
+                document.getElementById('unit-price').value = product.unitPrice;
+                document.getElementById('unit-price-label').textContent = `원/${product.unit || 'ml'}`;
+            }
+
+            // 제품등록 탭으로 이동
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            document.querySelectorAll('.tab-btn')[0].classList.add('active');
+            document.getElementById('register-tab').classList.add('active');
+
+            // 수정 모드 설정
+            editingProductId = productId;
+            
+            // 현재 선택된 제품명 저장 (수정 후 자동 비교용)
+            window.currentSelectedProduct = product.productName;
+
+            alert('수정할 내용을 입력하고 등록하기 버튼을 눌러주세요.');
+        }
+
+        // 제품 삭제
+        function deleteProduct(productId) {
+            console.log('삭제 함수 호출, ID:', productId);
+            const product = products.find(p => p.id === productId);
+            if (!product) {
+                alert('제품을 찾을 수 없습니다.');
+                return;
+            }
+
+            if (confirm(`${product.brandName} (${product.storeName}) 정보를 삭제하시겠습니까?`)) {
+                products = products.filter(p => p.id !== productId);
+                saveData();
+                showComparison();
+                updateCompareOptions();
+                updateHistory();
+                alert('제품이 삭제되었습니다.');
+            }
+        }
+
+        // 페이지 로드시 데이터 불러오기
+        // 드롭다운 화살표 클릭시 제품명 목록 표시/숨김
+        function toggleProductList() {
+            const suggestions = document.getElementById('product-suggestions');
+            if (suggestions.style.display === 'none' || suggestions.style.display === '') {
+                if (productNames.size > 0) {
+                    suggestions.innerHTML = Array.from(productNames).map(item => 
+                        `<div class="suggestion-item">
+                            <div class="suggestion-item-with-delete">
+                                <span class="suggestion-text" onclick="selectSuggestion('product-name', '${item}', true)">${item}</span>
+                                <button class="delete-suggestion-btn" onclick="deleteProductName('${item}')">삭제</button>
+                            </div>
+                        </div>`
+                    ).join('');
+                    suggestions.style.display = 'block';
+                }
+            } else {
+                suggestions.style.display = 'none';
+            }
+        }
+
+        // 페이지 로드시 데이터 불러오기
+        
+
+        // 드롭다운 화살표 클릭시 수퍼이름 목록 표시/숨김
+        function toggleStoreList() {
+            const suggestions = document.getElementById('store-suggestions');
+            if (suggestions.style.display === 'none' || suggestions.style.display === '') {
+                if (stores.size > 0) {
+                    suggestions.innerHTML = Array.from(stores).map(item => 
+                        `<div class="suggestion-item">
+                            <div class="suggestion-item-with-delete">
+                                <span class="suggestion-text" onclick="selectSuggestion('store-name', '${item}', false)">${item}</span>
+                                <button class="delete-suggestion-btn" onclick="deleteStoreName('${item}')">삭제</button>
+                            </div>
+                        </div>`
+                    ).join('');
+                    suggestions.style.display = 'block';
+                }
+            } else {
+                suggestions.style.display = 'none';
+            }
+        }
+
+        
+        // 드롭다운 화살표 클릭시 상품명 목록 표시/숨김 (해당 제품명 기준)
+        function toggleBrandList() {
+            const suggestions = document.getElementById('brand-suggestions');
+            const productName = document.getElementById('product-name').value.trim();
+            
+            if (suggestions.style.display === 'none' || suggestions.style.display === '') {
+                if (productName) {
+                    // 해당 제품명에 해당하는 상품명들만 필터링
+                    const relatedBrands = products
+                        .filter(p => p.productName === productName)
+                        .map(p => p.brandName)
+                        .filter(brand => brand !== '-');
+                    
+                    const uniqueBrands = [...new Set(relatedBrands)];
+                    
+                    if (uniqueBrands.length > 0) {
+                        suggestions.innerHTML = uniqueBrands.map(item => 
+                            `<div class="suggestion-item">
+                                <div class="suggestion-item-with-delete">
+                                    <span class="suggestion-text" onclick="selectSuggestion('brand-name', '${item}', false)">${item}</span>
+                                    <button class="delete-suggestion-btn" onclick="deleteBrandName('${item}')">삭제</button>
+                                </div>
+                            </div>`
+                        ).join('');
+                        suggestions.style.display = 'block';
+                    } else {
+                        alert('해당 제품명에 등록된 상품명이 없습니다.');
+                    }
+                } else {
+                    alert('먼저 제품명을 입력해주세요.');
+                }
+            } else {
+                suggestions.style.display = 'none';
+            }
+        }
+        
+        // 제품명 삭제 함수
+        function deleteProductName(productName) {
+            if (confirm(`"${productName}" 제품명과 관련된 모든 자료가 삭제됩니다.\n\n확인하시겠습니까?`)) {
+                // 해당 제품명의 모든 상품 삭제
+                products = products.filter(p => p.productName !== productName);
+                productNames.delete(productName);
+                
+                // 데이터 저장 및 UI 업데이트
+                saveData();
+                updateCompareOptions();
+                updateHistory();
+                setupAutoComplete();
+                
+                // 드롭다운 닫기
+                document.getElementById('product-suggestions').style.display = 'none';
+                
+                alert(`"${productName}" 제품명과 관련된 모든 자료가 삭제되었습니다.`);
+            }
+        }
+
+        // 수퍼이름 삭제 함수
+        function deleteStoreName(storeName) {
+            if (confirm(`"${storeName}" 수퍼이름과 관련된 모든 자료가 삭제됩니다.\n\n확인하시겠습니까?`)) {
+                // 해당 수퍼이름의 모든 상품 삭제
+                products = products.filter(p => p.storeName !== storeName);
+                stores.delete(storeName);
+                
+                // 데이터 저장 및 UI 업데이트
+                saveData();
+                updateCompareOptions();
+                updateHistory();
+                setupAutoComplete();
+                
+                // 드롭다운 닫기
+                document.getElementById('store-suggestions').style.display = 'none';
+                
+                alert(`"${storeName}" 수퍼이름과 관련된 모든 자료가 삭제되었습니다.`);
+            }
+        }
+
+        // 상품명 삭제 함수
+        function deleteBrandName(brandName) {
+            if (confirm(`"${brandName}" 상품명과 관련된 모든 자료가 삭제됩니다.\n\n확인하시겠습니까?`)) {
+                // 해당 상품명의 모든 상품 삭제
+                products = products.filter(p => p.brandName !== brandName);
+                brands.delete(brandName);
+                
+                // 데이터 저장 및 UI 업데이트
+                saveData();
+                updateCompareOptions();
+                updateHistory();
+                setupAutoComplete();
+                
+                // 드롭다운 닫기
+                document.getElementById('brand-suggestions').style.display = 'none';
+                
+                alert(`"${brandName}" 상품명과 관련된 모든 자료가 삭제되었습니다.`);
+            }
+        }
+        // 데이터 관리 메뉴 토글
+        function toggleDataManagement() {
+            const menu = document.getElementById('data-management');
+            if (menu.style.display === 'none' || menu.style.display === '') {
+                menu.style.display = 'flex';
+            } else {
+                menu.style.display = 'none';
+            }
+        }
+
+        // 안전한 복원 처리
+        let restoreClickCount = 0;
+        let restoreTimer = null;
+        
+        function handleRestore() {
+            restoreClickCount++;
+            
+            if (restoreClickCount === 1) {
+                alert('복원하려면 다시 한 번 더 클릭해주세요.\n(실수 방지를 위한 더블클릭 방식)');
+                restoreTimer = setTimeout(() => {
+                    restoreClickCount = 0;
+                }, 3000); // 3초 후 초기화
+                return;
+            }
+            
+            if (restoreClickCount === 2) {
+                clearTimeout(restoreTimer);
+                restoreClickCount = 0;
+                
+                if (confirm('정말로 복원을 진행하시겠습니까?\n\n복원하면 현재 데이터가 모두 삭제됩니다.')) {
+                    document.getElementById('import-file').click();
+                }
+            }
+        }
+        // 데이터 백업 함수
+        function exportData() {
+            try {
+                const allData = {
+                    products: products,
+                    productNames: [...productNames],
+                    stores: [...stores],
+                    brands: [...brands],
+                    exportDate: new Date().toLocaleString()
+                };
+                
+                const dataStr = JSON.stringify(allData, null, 2);
+                const dataBlob = new Blob([dataStr], {type: 'application/json'});
+                const url = URL.createObjectURL(dataBlob);
+                const link = document.createElement('a');
+                link.href = url;
+                
+                // 현재 시간으로 파일명 생성
+                const now = new Date();
+                const timestamp = now.getFullYear() + '-' + 
+                    String(now.getMonth() + 1).padStart(2, '0') + '-' + 
+                    String(now.getDate()).padStart(2, '0') + '_' +
+                    String(now.getHours()).padStart(2, '0') + 
+                    String(now.getMinutes()).padStart(2, '0');
+                
+                link.download = 'moneyapp_backup_' + timestamp + '.json';
+                
+                // DOM에 추가 후 클릭
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                URL.revokeObjectURL(url);
+                
+                alert('데이터가 백업되었습니다.\n파일명: ' + link.download);
+            } catch (error) {
+                alert('백업 중 오류가 발생했습니다: ' + error.message);
+            }
+        }
+
+        // 데이터 복원 함수
+        function importData(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            if (confirm('기존 데이터가 모두 삭제되고 백업 데이터로 복원됩니다. 계속하시겠습니까?')) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    try {
+                        const backupData = JSON.parse(e.target.result);
+                        products = backupData.products || [];
+                        productNames = new Set(backupData.productNames || []);
+                        stores = new Set(backupData.stores || []);
+                        brands = new Set(backupData.brands || []);
+                        saveData();
+                        updateCompareOptions();
+                        updateHistory();
+                        setupAutoComplete();
+                        
+                        // 폼 초기화
+                        clearForm();
+                        
+                        // 비교 화면 초기화
+                        document.getElementById('comparison-results').innerHTML = `
+                            <div class="empty-state">
+                                <div style="font-size: 48px; margin-bottom: 16px;">🛒</div>
+                                <p>제품을 선택하고 비교해보세요!</p>
+                            </div>
+                        `;
+                        
+                        alert('데이터가 복원되었습니다.');
+                    } catch (error) {
+                        alert('백업 파일이 올바르지 않습니다.');
+                    }
+                };
+                reader.readAsText(file);
+            }
+            
+            // 파일 입력 초기화
+            event.target.value = '';
+        }
+        window.onload = function() {
+            // 3초 후 초기 화면 숨기고 메인 앱 표시
+            setTimeout(() => {
+                document.getElementById('splash-screen').style.display = 'none';
+                document.getElementById('main-app').style.display = 'block';
+                // 데이터 관리 메뉴 확실히 숨기기
+                document.getElementById('data-management').style.display = 'none';
+            }, 3000);
+
+            loadData();
+            setupCalculation();
+            setupAutoComplete();
+            updateCompareOptions();
+            updateHistory();
+        };
+    </script>
+</body>
+</html>
