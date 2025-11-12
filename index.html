@@ -345,12 +345,18 @@
         }
         .dropdown-arrow {
             position: absolute;
-            right: 12px;
+            right: 4px;
             top: 50%;
             transform: translateY(-50%);
             cursor: pointer;
             color: #999;
-            font-size: 12px;
+            font-size: 14px;
+            padding: 12px;
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            user-select: none;
         }
 
         .splash-screen {
@@ -463,8 +469,8 @@
                 <div class="form-group">
                     <label class="form-label">제품명</label>
                     <div class="input-wrapper">
-                        <input type="text" class="form-input" id="product-name" placeholder="예: 콜라" autocomplete="off">
-                        <span class="dropdown-arrow" onclick="toggleProductList()">▼</span>
+                        <input type="text" class="form-input" id="product-name" placeholder="예: 콜라" autocomplete="off" maxlength="20">
+                        <span class="dropdown-arrow" data-toggle="product" onclick="toggleProductList()">▼</span>
                         <div id="product-suggestions" class="suggestion-box" style="display: none;"></div>
                     </div>
                 </div>
@@ -472,8 +478,8 @@
                 <div class="form-group">
                     <label class="form-label">수퍼이름</label>
                     <div class="input-wrapper">
-                        <input type="text" class="form-input" id="store-name" placeholder="예: 롯데수퍼" autocomplete="off">
-                        <span class="dropdown-arrow" onclick="toggleStoreList()">▼</span>
+                        <input type="text" class="form-input" id="store-name" placeholder="예: 롯데수퍼" autocomplete="off" maxlength="20">
+                        <span class="dropdown-arrow" data-toggle="store" onclick="toggleStoreList()">▼</span>
                         <div id="store-suggestions" class="suggestion-box" style="display: none;"></div>
                     </div>
                 </div>
@@ -481,8 +487,8 @@
                 <div class="form-group">
                     <label class="form-label">상품명</label>
                     <div class="input-wrapper">
-                        <input type="text" class="form-input" id="brand-name" placeholder="예: 코카콜라" autocomplete="off">
-                        <span class="dropdown-arrow" onclick="toggleBrandList()">▼</span>
+                        <input type="text" class="form-input" id="brand-name" placeholder="예: 코카콜라" autocomplete="off" maxlength="20">
+                        <span class="dropdown-arrow" data-toggle="brand" onclick="toggleBrandList()">▼</span>
                         <div id="brand-suggestions" class="suggestion-box" style="display: none;"></div>
                     </div>
                 </div>
@@ -511,7 +517,15 @@
                 </div>
 
                 <div class="form-group">
-                    <label class="form-label">단위단가</label>
+                    <label class="form-label">배송료</label>
+                    <div class="unit-display">
+                        <input type="number" class="form-input" id="shipping" placeholder="예: 2500">
+                        <span class="unit-label">원</span>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">단위단가(배송료 포함 계산입니다)</label>
                     <div class="unit-display">
                         <input type="text" class="form-input" id="unit-price" placeholder="자동 계산됩니다" readonly>
                         <span class="unit-label" id="unit-price-label">원/ml</span>
@@ -554,6 +568,19 @@
         </div>
     </div>
     <input type="file" id="import-file" accept=".json" onchange="importData(event)" style="display: none;">
+    
+    <!-- 복원 확인 모달 -->
+    <div id="restore-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); z-index: 9999;">
+        <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 30px; border-radius: 15px; max-width: 300px; width: 90%; text-align: center;">
+            <h3 style="margin-bottom: 20px; font-size: 16px; color: #dc3545; font-weight: 700;">⚠️ 데이터 복원 경고</h3>
+            <p style="font-size: 14px; color: #333; margin-bottom: 25px; line-height: 1.5;">복원하면 현재 자료가 모두 사라집니다.<br>계속할까요?</p>
+            <div style="margin-top: 20px; text-align: center;">
+                <button onclick="closeRestoreModal()" style="padding: 10px 20px; background: #ddd; color: #333; border: none; border-radius: 8px; cursor: pointer; margin-right: 10px; font-size: 12px;">취소</button>
+                <button onclick="confirmRestore()" style="padding: 10px 20px; background: #dc3545; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 12px;">확인</button>
+            </div>
+        </div>
+    </div>
+    
     <script>
         // 전역 변수
         let products = [];
@@ -596,6 +623,7 @@
         function setupCalculation() {
             const volumeInput = document.getElementById('volume');
             const priceInput = document.getElementById('price');
+            const shippingInput = document.getElementById('shipping');
             const unitInput = document.getElementById('unit');
             const unitPriceInput = document.getElementById('unit-price');
             const unitPriceLabel = document.getElementById('unit-price-label');
@@ -603,12 +631,14 @@
             function calculateUnitPrice() {
                 const volume = parseFloat(volumeInput.value);
                 const price = parseFloat(priceInput.value);
+                const shipping = parseFloat(shippingInput.value) || 0;
                 const unit = unitInput.value;
                 
-                console.log('계산 중:', { volume, price, unit });
+                console.log('계산 중:', { volume, price, shipping, unit });
                 
                 if (volume && price && volume > 0 && price > 0) {
-                    const unitPrice = (price / volume).toFixed(2);
+                    const totalPrice = price + shipping;
+                    const unitPrice = (totalPrice / volume).toFixed(2);
                     unitPriceInput.value = unitPrice;
                     unitPriceLabel.textContent = `원/${unit}`;
                     console.log('단위가격 계산됨:', unitPrice + '원/' + unit);
@@ -619,9 +649,10 @@
             }
 
             // 즉시 계산 및 이벤트 리스너 등록
-            if (volumeInput && priceInput && unitInput) {
+            if (volumeInput && priceInput && shippingInput && unitInput) {
                 volumeInput.addEventListener('input', calculateUnitPrice);
                 priceInput.addEventListener('input', calculateUnitPrice);
+                shippingInput.addEventListener('input', calculateUnitPrice);
                 unitInput.addEventListener('change', calculateUnitPrice);
                 
                 // 페이지 로드시 즉시 계산 시도
@@ -706,17 +737,19 @@
             const brandName = document.getElementById('brand-name').value.trim() || '-';
             const volume = parseFloat(document.getElementById('volume').value) || 0;
             const price = parseFloat(document.getElementById('price').value) || 0;
+            const shipping = parseFloat(document.getElementById('shipping').value) || 0;
             const unit = document.getElementById('unit').value;
 
             // 등록 버튼 클릭시 단위단가 계산 및 표시
             if (volume > 0 && price > 0) {
-                const unitPrice = (price / volume).toFixed(2);
+                const totalPrice = price + shipping;
+                const unitPrice = (totalPrice / volume).toFixed(2);
                 document.getElementById('unit-price').value = unitPrice;
                 document.getElementById('unit-price-label').textContent = `원/${unit}`;
                 console.log('단위단가 계산됨:', unitPrice + '원/' + unit);
             }
 
-            console.log('입력값:', { productName, storeName, brandName, volume, price, unit });
+            console.log('입력값:', { productName, storeName, brandName, volume, price, shipping, unit });
 
             // 최소 유효성 검사 - 제품명만 필수
             if (!productName) {
@@ -728,7 +761,8 @@
             // 단위가격 계산 (용량과 가격이 있을 때만)
             let unitPrice = 0;
             if (volume > 0 && price > 0) {
-                unitPrice = Math.round((price / volume) * 100) / 100;
+                const totalPrice = price + shipping;
+                unitPrice = Math.round((totalPrice / volume) * 100) / 100;
             }
 
             // 새 제품 객체 생성
@@ -739,6 +773,7 @@
                 brandName: brandName,
                 volume: volume,
                 price: price,
+                shipping: shipping,
                 unit: unit,
                 unitPrice: unitPrice,
                 createdAt: new Date().toLocaleString()
@@ -755,6 +790,7 @@
                                  originalProduct.brandName !== brandName ||
                                  originalProduct.volume !== volume ||
                                  originalProduct.price !== price ||
+                                 originalProduct.shipping !== shipping ||
                                  originalProduct.unit !== unit;
 
                 if (hasChanges) {
@@ -814,6 +850,7 @@
             document.getElementById('brand-name').value = '';
             document.getElementById('volume').value = '';
             document.getElementById('price').value = '';
+            document.getElementById('shipping').value = '';
             document.getElementById('unit').value = 'ml';
             document.getElementById('unit-price').value = '';
             document.getElementById('unit-price-label').textContent = '원/ml';
@@ -901,7 +938,7 @@
                     </div>
                     <div class="result-details">
                         <span>${product.brandName} ${product.volume > 0 ? product.volume + (product.unit || 'ml') : ''}</span>
-                        <span>${product.price > 0 ? product.price + '원' : '가격정보 없음'}</span>
+                        <span>${product.price > 0 ? (product.price + (product.shipping || 0)) + '원' : '가격정보 없음'}</span>
                     </div>
                     <div class="result-actions">
                         <button class="edit-btn" data-id="${product.id}" type="button">수정</button>
@@ -941,6 +978,7 @@
             document.getElementById('brand-name').value = product.brandName === '-' ? '' : product.brandName;
             document.getElementById('volume').value = product.volume || '';
             document.getElementById('price').value = product.price || '';
+            document.getElementById('shipping').value = product.shipping || '';
             document.getElementById('unit').value = product.unit || 'ml';
             
             // 단위단가 표시
@@ -1133,29 +1171,18 @@
             }
         }
 
-        // 안전한 복원 처리
-        let restoreClickCount = 0;
-        let restoreTimer = null;
-        
+        // 복원 모달 관련 함수
         function handleRestore() {
-            restoreClickCount++;
-            
-            if (restoreClickCount === 1) {
-                alert('복원하려면 다시 한 번 더 클릭해주세요.\n(실수 방지를 위한 더블클릭 방식)');
-                restoreTimer = setTimeout(() => {
-                    restoreClickCount = 0;
-                }, 3000); // 3초 후 초기화
-                return;
-            }
-            
-            if (restoreClickCount === 2) {
-                clearTimeout(restoreTimer);
-                restoreClickCount = 0;
-                
-                if (confirm('정말로 복원을 진행하시겠습니까?\n\n복원하면 현재 데이터가 모두 삭제됩니다.')) {
-                    document.getElementById('import-file').click();
-                }
-            }
+            document.getElementById('restore-modal').style.display = 'block';
+        }
+        
+        function closeRestoreModal() {
+            document.getElementById('restore-modal').style.display = 'none';
+        }
+        
+        function confirmRestore() {
+            closeRestoreModal();
+            document.getElementById('import-file').click();
         }
         // 데이터 백업 함수
         function exportData() {
@@ -1245,12 +1272,43 @@
                 // 데이터 관리 메뉴 확실히 숨기기
                 document.getElementById('data-management').style.display = 'none';
             }, 3000);
+            
 
             loadData();
             setupCalculation();
             setupAutoComplete();
             updateCompareOptions();
             updateHistory();
+
+            // 입력 필드 20자 제한 (실시간)
+            document.getElementById('product-name').addEventListener('input', function(e) {
+                if (this.value.length > 20) {
+                    this.value = this.value.substring(0, 20);
+                }
+            });
+            
+            document.getElementById('store-name').addEventListener('input', function(e) {
+                if (this.value.length > 20) {
+                    this.value = this.value.substring(0, 20);
+                }
+            });
+            
+            document.getElementById('brand-name').addEventListener('input', function(e) {
+                if (this.value.length > 20) {
+                    this.value = this.value.substring(0, 20);
+                }
+            });
+            // 드롭다운 터치 이벤트 개선
+            document.querySelectorAll('.dropdown-arrow').forEach(arrow => {
+                arrow.addEventListener('touchend', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    const toggle = this.getAttribute('data-toggle');
+                    if (toggle === 'product') toggleProductList();
+                    else if (toggle === 'store') toggleStoreList();
+                    else if (toggle === 'brand') toggleBrandList();
+                });
+            });
         };
     </script>
 </body>
