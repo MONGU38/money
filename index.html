@@ -12,19 +12,20 @@
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Apple SD Gothic Neo', sans-serif;
-            background: linear-gradient(135deg, #ff6b35 0%, #f7931e 100%);
+            font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #0f0f1e 100%);
             min-height: 100vh;
             padding: 20px;
-            font-size: 14px;
+            font-size: 13px;
         }
 
         .container {
             max-width: 400px;
             margin: 0 auto;
-            background: white;
+            background: #1e1e2f;
             border-radius: 20px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            box-shadow: 0 0 30px rgba(255, 107, 53, 0.3);
+            border: 2px solid #ff6b35;
             overflow: hidden;
         }
 
@@ -45,6 +46,67 @@
             font-size: 13px;
             opacity: 0.9;
         }
+        .search-container {
+            padding: 15px 20px;
+            background: #1e1e2f;
+            position: relative;
+        }
+
+        #searchInput {
+            width: 100%;
+            padding: 12px 15px;
+            background: #2a2a3e;
+            border: 2px solid #ff6b35;
+            border-radius: 10px;
+            color: white;
+            font-size: 13px;
+            outline: none;
+        }
+
+        #searchInput::placeholder {
+            color: #999;
+        }
+
+        .search-results {
+            position: absolute;
+            top: 60px;
+            left: 20px;
+            right: 20px;
+            background: #2a2a3e;
+            border: 2px solid #ff6b35;
+            border-radius: 10px;
+            max-height: 300px;
+            overflow-y: auto;
+            display: none;
+            z-index: 1000;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5);
+        }
+
+        .search-item {
+            padding: 12px 15px;
+            border-bottom: 1px solid #3a3a4e;
+            cursor: pointer;
+            color: white;
+            transition: all 0.3s ease;
+        }
+
+        .search-item:hover {
+            background: #ff6b35;
+        }
+
+        .search-item:last-child {
+            border-bottom: none;
+        }
+
+        .search-highlight {
+            background: rgba(255, 107, 53, 0.3);
+            animation: highlight 2s ease;
+        }
+
+        @keyframes highlight {
+            0% { background: rgba(255, 107, 53, 0.8); }
+            100% { background: transparent; }
+        }
 
         .content {
             padding: 20px;
@@ -52,10 +114,11 @@
 
         .tab-buttons {
             display: flex;
-            background: #f8f9fa;
+            background: #2a2a3e;
             border-radius: 12px;
             padding: 4px;
             margin-bottom: 20px;
+            border: 2px solid #ff6b35;
         }
 
         .tab-btn {
@@ -66,15 +129,15 @@
             border-radius: 8px;
             font-size: 13px;
             font-weight: 500;
-            color: #666;
+            color: #999;
             cursor: pointer;
-            transition: all 0.2s ease;
+            transition: all 0.3s ease;
         }
 
         .tab-btn.active {
-            background: white;
-            color: #ff6b35;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            background: #ff6b35;
+            color: white;
+            box-shadow: 0 0 20px rgba(255, 107, 53, 0.8), 0 0 40px rgba(255, 107, 53, 0.4);
         }
 
         .tab-content {
@@ -86,37 +149,44 @@
         }
 
         .form-group {
-            margin-bottom: 16px;
+            margin-bottom: 10px;
         }
 
         .form-label {
             display: block;
             margin-bottom: 6px;
             font-weight: 500;
-            color: #333;
+            color: #f7931e;
             font-size: 13px;
+            text-shadow: 0 0 10px rgba(247, 147, 30, 0.5);
         }
 
         .form-input {
             width: 100%;
             padding: 12px 14px;
-            border: 2px solid #e9ecef;
+            border: 2px solid #ff6b35;
             border-radius: 10px;
             font-size: 14px;
-            transition: all 0.2s ease;
-            background: #fafbfc;
+            transition: all 0.3s ease;
+            background: #2a2a3e;
+            color: #fff;
         }
 
         .form-input:focus {
             outline: none;
             border-color: #ff6b35;
-            background: white;
-            box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.1);
+            background: #353549;
+            box-shadow: 0 0 15px rgba(255, 107, 53, 0.6), 0 0 30px rgba(255, 107, 53, 0.3);
         }
 
-        .form-input:disabled {
-            background: #f1f3f4;
-            color: #666;
+        /* 숫자 입력칸 화살표 제거 */
+        input[type="number"]::-webkit-inner-spin-button,
+        input[type="number"]::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        input[type="number"] {
+            -moz-appearance: textfield;
         }
 
         .unit-display {
@@ -163,11 +233,12 @@
         }
 
         .result-item {
-            background: #f8f9fa;
+            background: #2a2a3e;
             border-radius: 12px;
             padding: 16px;
             margin-bottom: 12px;
-            border-left: 4px solid #ff6b35;
+            border: 2px solid #ff6b35;
+            box-shadow: 0 0 15px rgba(255, 107, 53, 0.3);
         }
 
         .result-item.best {
@@ -184,7 +255,7 @@
 
         .result-store {
             font-weight: 600;
-            color: #333;
+            color: #fff;
             font-size: 14px;
         }
 
@@ -196,7 +267,7 @@
 
         .result-details {
             font-size: 12px;
-            color: #666;
+            color: #bbb;
             display: flex;
             justify-content: space-between;
         }
@@ -214,7 +285,7 @@
         .empty-state {
             text-align: center;
             padding: 40px 20px;
-            color: #666;
+            color: #999;
         }
 
         .history-section {
@@ -457,6 +528,10 @@
             <h1>💰 머니앱</h1>
             <p>똑똑한 가격 비교로 절약하세요</p>
         </div>
+        <div class="search-container">
+            <input type="text" id="searchInput" placeholder="🔍 항목 검색..." autocomplete="off">
+            <div id="searchResults" class="search-results"></div>
+        </div>
         
         <div class="content">
             <div class="tab-buttons">
@@ -494,9 +569,9 @@
                 </div>
 
                 <div class="form-group">
-                    <label class="form-label">용량</label>
+                    <label class="form-label">용량 / 금액</label>
                     <div class="unit-display">
-                        <input type="number" class="form-input" id="volume" placeholder="예: 500" style="flex: 2;">
+                        <input type="number" class="form-input" id="volume" placeholder="용량" style="flex: 1.5;">
                         <select class="form-input" id="unit" style="flex: 1; margin-left: 8px;">
                             <option value="ml">ml</option>
                             <option value="g">g</option>
@@ -505,30 +580,21 @@
                             <option value="개">개</option>
                             <option value="팩">팩</option>
                         </select>
+                        <input type="number" class="form-input" id="unit-price-input" placeholder="금액" style="flex: 1.5; margin-left: 8px;">
                     </div>
                 </div>
 
                 <div class="form-group">
-                    <label class="form-label">가격</label>
-                    <div class="unit-display">
-                        <input type="number" class="form-input" id="price" placeholder="예: 1250">
-                        <span class="unit-label">원</span>
-                    </div>
+                    <label class="form-label">단위당 금액</label>
+                    <input type="text" class="form-input" id="unit-price-result" placeholder="자동 계산됩니다" readonly>
                 </div>
 
                 <div class="form-group">
-                    <label class="form-label">배송료</label>
+                    <label class="form-label">개당금액</label>
                     <div class="unit-display">
-                        <input type="number" class="form-input" id="shipping" placeholder="예: 2500">
-                        <span class="unit-label">원</span>
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <label class="form-label">단위단가(배송료 포함 계산입니다)</label>
-                    <div class="unit-display">
-                        <input type="text" class="form-input" id="unit-price" placeholder="자동 계산됩니다" readonly>
-                        <span class="unit-label" id="unit-price-label">원/ml</span>
+                        <input type="number" class="form-input" id="quantity" placeholder="개수" style="flex: 1;">
+                        <input type="number" class="form-input" id="quantity-price" placeholder="금액" style="flex: 1; margin-left: 8px;">
+                        <input type="text" class="form-input" id="quantity-result" placeholder="개당 금액" readonly style="flex: 1; margin-left: 8px; background: #2a2a3e;">
                     </div>
                 </div>
 
@@ -588,6 +654,69 @@
         let stores = new Set();
         let brands = new Set();
         let editingProductId = null;
+        // 검색 기능
+        function initSearch() {
+            const searchInput = document.getElementById('searchInput');
+            const searchResults = document.getElementById('searchResults');
+
+            searchInput.addEventListener('input', function() {
+                const keyword = this.value.trim().toLowerCase();
+                
+                if (keyword === '') {
+                    searchResults.style.display = 'none';
+                    return;
+                }
+
+                const matches = products.filter(p => 
+                    p.productName.toLowerCase().includes(keyword) ||
+                    p.storeName.toLowerCase().includes(keyword) ||
+                    p.brandName.toLowerCase().includes(keyword)
+                );
+
+                if (matches.length === 0) {
+                    searchResults.innerHTML = '<div class="search-item" style="color: #999;">검색 결과가 없습니다</div>';
+                    searchResults.style.display = 'block';
+                    return;
+                }
+
+                searchResults.innerHTML = matches.map(item => 
+                    `<div class="search-item" onclick="selectSearchItem('${item.id}')">
+                        <div>${item.productName} - ${item.storeName}</div>
+                        <div style="font-size: 11px; color: #999; margin-top: 4px;">
+                            ${item.brandName} | ${item.volume}${item.unit} / ${parseInt(item.unitPriceInput).toLocaleString()}원
+                        </div>
+                    </div>`
+                ).join('');
+
+                searchResults.style.display = 'block';
+            });
+
+            document.addEventListener('click', function(e) {
+                if (!searchInput.contains(e.target) && !searchResults.contains(e.target)) {
+                    searchResults.style.display = 'none';
+                }
+            });
+        }
+
+        function selectSearchItem(productId) {
+            document.getElementById('searchResults').style.display = 'none';
+            document.getElementById('searchInput').value = '';
+            
+            switchTab('compare');
+            
+            setTimeout(() => {
+                const productCards = document.querySelectorAll('.product-card');
+                productCards.forEach(card => {
+                    if (card.dataset.productId === productId) {
+                        card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        card.classList.add('search-highlight');
+                        setTimeout(() => {
+                            card.classList.remove('search-highlight');
+                        }, 2000);
+                    }
+                });
+            }, 100);
+        }
 
         // 로컬스토리지에서 데이터 불러오기
         function loadData() {
@@ -622,45 +751,49 @@
         // 단위가격 자동 계산 설정
         function setupCalculation() {
             const volumeInput = document.getElementById('volume');
-            const priceInput = document.getElementById('price');
-            const shippingInput = document.getElementById('shipping');
+            const priceInput = document.getElementById('unit-price-input');
             const unitInput = document.getElementById('unit');
-            const unitPriceInput = document.getElementById('unit-price');
-            const unitPriceLabel = document.getElementById('unit-price-label');
+            const resultInput = document.getElementById('unit-price-result');
+            const quantityInput = document.getElementById('quantity');
+            const quantityPriceInput = document.getElementById('quantity-price');
+            const quantityResultInput = document.getElementById('quantity-result');
 
             function calculateUnitPrice() {
                 const volume = parseFloat(volumeInput.value);
                 const price = parseFloat(priceInput.value);
-                const shipping = parseFloat(shippingInput.value) || 0;
                 const unit = unitInput.value;
                 
-                console.log('계산 중:', { volume, price, shipping, unit });
-                
                 if (volume && price && volume > 0 && price > 0) {
-                    const totalPrice = price + shipping;
-                    const unitPrice = (totalPrice / volume).toFixed(2);
-                    unitPriceInput.value = unitPrice;
-                    unitPriceLabel.textContent = `원/${unit}`;
-                    console.log('단위가격 계산됨:', unitPrice + '원/' + unit);
+                    const unitPrice = (price / volume).toFixed(2);
+                    resultInput.value = unitPrice + '원/' + unit;
                 } else {
-                    unitPriceInput.value = '';
-                    unitPriceLabel.textContent = `원/${unit}`;
+                    resultInput.value = '';
                 }
             }
 
-            // 즉시 계산 및 이벤트 리스너 등록
-            if (volumeInput && priceInput && shippingInput && unitInput) {
+            function calculateQuantityPrice() {
+                const quantity = parseFloat(quantityInput.value);
+                const qPrice = parseFloat(quantityPriceInput.value);
+                
+                if (quantity && qPrice && quantity > 0 && qPrice > 0) {
+                    const qResult = (qPrice / quantity).toFixed(2);
+                    quantityResultInput.value = qResult + '원/개';
+                } else {
+                    quantityResultInput.value = '';
+                }
+            }
+
+            if (volumeInput && priceInput && unitInput) {
                 volumeInput.addEventListener('input', calculateUnitPrice);
                 priceInput.addEventListener('input', calculateUnitPrice);
-                shippingInput.addEventListener('input', calculateUnitPrice);
                 unitInput.addEventListener('change', calculateUnitPrice);
-                
-                // 페이지 로드시 즉시 계산 시도
                 calculateUnitPrice();
-                
-                console.log('계산 이벤트 리스너 등록 완료');
-            } else {
-                console.error('입력 필드를 찾을 수 없습니다');
+            }
+
+            if (quantityInput && quantityPriceInput) {
+                quantityInput.addEventListener('input', calculateQuantityPrice);
+                quantityPriceInput.addEventListener('input', calculateQuantityPrice);
+                calculateQuantityPrice();
             }
         }
 
@@ -736,20 +869,12 @@
             const storeName = document.getElementById('store-name').value.trim() || '-';
             const brandName = document.getElementById('brand-name').value.trim() || '-';
             const volume = parseFloat(document.getElementById('volume').value) || 0;
-            const price = parseFloat(document.getElementById('price').value) || 0;
-            const shipping = parseFloat(document.getElementById('shipping').value) || 0;
+            const price = parseFloat(document.getElementById('unit-price-input').value) || 0;
             const unit = document.getElementById('unit').value;
+            const quantity = parseFloat(document.getElementById('quantity').value) || 0;
+            const quantityPrice = parseFloat(document.getElementById('quantity-price').value) || 0;
 
-            // 등록 버튼 클릭시 단위단가 계산 및 표시
-            if (volume > 0 && price > 0) {
-                const totalPrice = price + shipping;
-                const unitPrice = (totalPrice / volume).toFixed(2);
-                document.getElementById('unit-price').value = unitPrice;
-                document.getElementById('unit-price-label').textContent = `원/${unit}`;
-                console.log('단위단가 계산됨:', unitPrice + '원/' + unit);
-            }
-
-            console.log('입력값:', { productName, storeName, brandName, volume, price, shipping, unit });
+            console.log('입력값:', { productName, storeName, brandName, volume, price, unit, quantity, quantityPrice });
 
             // 최소 유효성 검사 - 제품명만 필수
             if (!productName) {
@@ -761,8 +886,13 @@
             // 단위가격 계산 (용량과 가격이 있을 때만)
             let unitPrice = 0;
             if (volume > 0 && price > 0) {
-                const totalPrice = price + shipping;
-                unitPrice = Math.round((totalPrice / volume) * 100) / 100;
+                unitPrice = Math.round((price / volume) * 100) / 100;
+            }
+
+            // 개수당 금액 계산
+            let quantityUnitPrice = 0;
+            if (quantity > 0 && quantityPrice > 0) {
+                quantityUnitPrice = Math.round((quantityPrice / quantity) * 100) / 100;
             }
 
             // 새 제품 객체 생성
@@ -773,9 +903,11 @@
                 brandName: brandName,
                 volume: volume,
                 price: price,
-                shipping: shipping,
                 unit: unit,
                 unitPrice: unitPrice,
+                quantity: quantity,
+                quantityPrice: quantityPrice,
+                quantityUnitPrice: quantityUnitPrice,
                 createdAt: new Date().toLocaleString()
             };
 
@@ -790,8 +922,9 @@
                                  originalProduct.brandName !== brandName ||
                                  originalProduct.volume !== volume ||
                                  originalProduct.price !== price ||
-                                 originalProduct.shipping !== shipping ||
-                                 originalProduct.unit !== unit;
+                                 originalProduct.unit !== unit ||
+                                 originalProduct.quantity !== quantity ||
+                                 originalProduct.quantityPrice !== quantityPrice;
 
                 if (hasChanges) {
                     products = products.filter(p => p.id !== editingProductId);
@@ -849,11 +982,12 @@
             document.getElementById('store-name').value = '';
             document.getElementById('brand-name').value = '';
             document.getElementById('volume').value = '';
-            document.getElementById('price').value = '';
-            document.getElementById('shipping').value = '';
+            document.getElementById('unit-price-input').value = '';
             document.getElementById('unit').value = 'ml';
-            document.getElementById('unit-price').value = '';
-            document.getElementById('unit-price-label').textContent = '원/ml';
+            document.getElementById('unit-price-result').value = '';
+            document.getElementById('quantity').value = '';
+            document.getElementById('quantity-price').value = '';
+            document.getElementById('quantity-result').value = '';
             
             // 수정 모드 해제
             editingProductId = null;
@@ -928,7 +1062,8 @@
             relatedProducts.sort((a, b) => a.unitPrice - b.unitPrice);
             
             resultsContainer.innerHTML = relatedProducts.map((product, index) => `
-                <div class="result-item ${index === 0 && product.unitPrice > 0 ? 'best' : ''}">
+                <div class="result-item ${index === 0 && product.unitPrice > 0 ? 'best' : ''}" data-product-id="${product.id}">
+
                     <div class="result-header">
                         <div>
                             <span class="result-store">${product.storeName}</span>
@@ -938,8 +1073,12 @@
                     </div>
                     <div class="result-details">
                         <span>${product.brandName} ${product.volume > 0 ? product.volume + (product.unit || 'ml') : ''}</span>
-                        <span>${product.price > 0 ? (product.price + (product.shipping || 0)) + '원' : '가격정보 없음'}</span>
+                        <span>${product.price > 0 ? product.price + '원' : '가격정보 없음'}</span>
                     </div>
+                    ${product.quantityUnitPrice > 0 ? `<div class="result-details" style="margin-top: 8px; color: #28a745; font-weight: 600;">
+                        <span>개당 금액: ${product.quantityUnitPrice}원/개</span>
+                        <span>${product.quantity > 0 ? product.quantity + '개 ' + product.quantityPrice + '원' : ''}</span>
+                    </div>` : ''}
                     <div class="result-actions">
                         <button class="edit-btn" data-id="${product.id}" type="button">수정</button>
                         <button class="delete-btn" data-id="${product.id}" type="button">삭제</button>
@@ -977,14 +1116,19 @@
             document.getElementById('store-name').value = product.storeName === '-' ? '' : product.storeName;
             document.getElementById('brand-name').value = product.brandName === '-' ? '' : product.brandName;
             document.getElementById('volume').value = product.volume || '';
-            document.getElementById('price').value = product.price || '';
-            document.getElementById('shipping').value = product.shipping || '';
+            document.getElementById('unit-price-input').value = product.price || '';
             document.getElementById('unit').value = product.unit || 'ml';
+            document.getElementById('quantity').value = product.quantity || '';
+            document.getElementById('quantity-price').value = product.quantityPrice || '';
             
-            // 단위단가 표시
+            // 단위당금액 표시
             if (product.unitPrice > 0) {
-                document.getElementById('unit-price').value = product.unitPrice;
-                document.getElementById('unit-price-label').textContent = `원/${product.unit || 'ml'}`;
+                document.getElementById('unit-price-result').value = product.unitPrice + '원/' + (product.unit || 'ml');
+            }
+            
+            // 개당금액 표시
+            if (product.quantityUnitPrice > 0) {
+                document.getElementById('quantity-result').value = product.quantityUnitPrice + '원/개';
             }
 
             // 제품등록 탭으로 이동
@@ -1279,6 +1423,7 @@
             setupAutoComplete();
             updateCompareOptions();
             updateHistory();
+            initSearch();
 
             // 입력 필드 20자 제한 (실시간)
             document.getElementById('product-name').addEventListener('input', function(e) {
