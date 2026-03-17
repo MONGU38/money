@@ -530,6 +530,7 @@
         </div>
         <div class="search-container">
             <input type="text" id="searchInput" placeholder="🔍 항목 검색..." autocomplete="off">
+<span id="search-clear-btn" onclick="clearSearch()" style="display:none; position:absolute; right:30px; top:50%; transform:translateY(-50%); cursor:pointer; color:#999; font-size:18px; padding:8px;">✕</span>
             <div id="searchResults" class="search-results"></div>
         </div>
         
@@ -655,12 +656,20 @@
         let brands = new Set();
         let editingProductId = null;
         // 검색 기능
+        function clearSearch() {
+            document.getElementById('searchInput').value = '';
+            document.getElementById('searchResults').style.display = 'none';
+            document.getElementById('search-clear-btn').style.display = 'none';
+            document.getElementById('searchInput').focus();
+        }
+
         function initSearch() {
             const searchInput = document.getElementById('searchInput');
             const searchResults = document.getElementById('searchResults');
 
             searchInput.addEventListener('input', function() {
                 const keyword = this.value.trim().toLowerCase();
+                document.getElementById('search-clear-btn').style.display = keyword ? 'block' : 'none';
                 
                 if (keyword === '') {
                     searchResults.style.display = 'none';
@@ -683,7 +692,7 @@
                     `<div class="search-item" onclick="selectSearchItem('${item.id}')">
                         <div>${item.productName} - ${item.storeName}</div>
                         <div style="font-size: 11px; color: #999; margin-top: 4px;">
-                            ${item.brandName} | ${item.volume}${item.unit} / ${parseInt(item.unitPriceInput).toLocaleString()}원
+                            ${item.brandName} | ${item.volume}${item.unit} / ${parseInt(item.price).toLocaleString()}원${item.quantityUnitPrice > 0 ? ' | 개당 ' + item.quantityUnitPrice + '원' : ''}
                         </div>
                     </div>`
                 ).join('');
