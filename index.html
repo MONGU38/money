@@ -604,8 +604,7 @@
                 <div style="margin-top: 20px; text-align: center;">
                     <button onclick="toggleDataManagement()" style="padding: 8px 16px; background: #6c757d; color: white; border: none; border-radius: 6px; font-size: 11px; font-weight: 500;">데이터 관리</button>
                     <div id="data-management" style="display: none; margin-top: 10px;">
-                        <button onclick="exportData()" style="padding: 10px 16px; background: #28a745; color: white; border: none; border-radius: 8px; font-size: 12px; font-weight: 500; margin-right: 10px;">📤 백업</button>
-                        <button onclick="handleRestore()" style="padding: 10px 16px; background: #dc3545; color: white; border: none; border-radius: 8px; font-size: 12px; font-weight: 500;">📥 복원</button>
+                        <button onclick="migrateToFirebase()" style="padding: 10px 16px; background: #ff6b35; color: white; border: none; border-radius: 8px; font-size: 12px; font-weight: 500; margin-right: 10px;">☁️ Firebase이전</button>
                     </div>
                 </div>
                 <div class="history-section" id="history-section" style="display: none;">
@@ -648,7 +647,21 @@
         </div>
     </div>
     
-    <script>
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+        import { getFirestore, collection, getDocs, addDoc, updateDoc, deleteDoc, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCvadpeZD7M234Z01h2C0oFgzYnXaDDuzs",
+            authDomain: "money-1f9b1.firebaseapp.com",
+            projectId: "money-1f9b1",
+            storageBucket: "money-1f9b1.firebasestorage.app",
+            messagingSenderId: "983260933976",
+            appId: "1:983260933976:web:5b1237caf9de285873bf2d"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
         // 전역 변수
         let products = [];
         let productNames = new Set();
@@ -709,31 +722,19 @@
 
         function selectSearchItem(productId) {
             document.getElementById('searchResults').style.display = 'none';
+            document.getElementById('search-clear-btn').style.display = 'none';
             document.getElementById('searchInput').value = '';
-            
-            switchTab('compare');
-            
-            setTimeout(() => {
-                const productCards = document.querySelectorAll('.product-card');
-                productCards.forEach(card => {
-                    if (card.dataset.productId === productId) {
-                        card.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                        card.classList.add('search-highlight');
-                        setTimeout(() => {
-                            card.classList.remove('search-highlight');
-                        }, 2000);
-                    }
-                });
-            }, 100);
+            editProduct(parseInt(productId));
         }
 
-        // 로컬스토리지에서 데이터 불러오기
-        function loadData() {
+        async function loadData() {
             try {
-                products = JSON.parse(localStorage.getItem('products') || '[]');
-                productNames = new Set(JSON.parse(localStorage.getItem('productNames') || '[]'));
-                stores = new Set(JSON.parse(localStorage.getItem('stores') || '[]'));
-                brands = new Set(JSON.parse(localStorage.getItem('brands') || '[]'));
+                const snapshot = await getDocs(collection(db, 'products'));
+                products = [];
+                snapshot.forEach(d => products.push({...d.data(), docId: d.id}));
+                productNames = new Set(products.map(p => p.productName));
+                stores = new Set(products.map(p => p.storeName).filter(s => s !== '-'));
+                brands = new Set(products.map(p => p.brandName).filter(b => b !== '-'));
                 console.log('데이터 로드 완료:', products.length + '개 제품');
             } catch (error) {
                 console.error('데이터 로드 실패:', error);
@@ -744,17 +745,7 @@
             }
         }
 
-        // 데이터 저장
-        function saveData() {
-            try {
-                localStorage.setItem('products', JSON.stringify(products));
-                localStorage.setItem('productNames', JSON.stringify([...productNames]));
-                localStorage.setItem('stores', JSON.stringify([...stores]));
-                localStorage.setItem('brands', JSON.stringify([...brands]));
-                console.log('데이터 저장 완료');
-            } catch (error) {
-                console.error('데이터 저장 실패:', error);
-            }
+        async function saveData() {
         }
 
         // 단위가격 자동 계산 설정
@@ -871,7 +862,7 @@
         }
 
         // 제품 등록
-        function registerProduct() {
+        async function registerProduct() {
             console.log('등록 함수 호출됨');
             
             const productName = document.getElementById('product-name').value.trim();
@@ -907,6 +898,7 @@
             // 새 제품 객체 생성
             const newProduct = {
                 id: Date.now(),
+                firestoreId: null,
                 productName: productName,
                 storeName: storeName,
                 brandName: brandName,
@@ -936,12 +928,16 @@
                                  originalProduct.quantityPrice !== quantityPrice;
 
                 if (hasChanges) {
+                    const original = products.find(p => p.id === editingProductId);
+                    if (original && original.docId) {
+                        await updateDoc(doc(db, 'products', original.docId), newProduct);
+                        newProduct.docId = original.docId;
+                    }
                     products = products.filter(p => p.id !== editingProductId);
                     products.push(newProduct);
                     productNames.add(productName);
                     if (storeName !== '-') stores.add(storeName);
                     if (brandName !== '-') brands.add(brandName);
-                    saveData();
                     updateCompareOptions();
                     updateHistory();
                     setupAutoComplete();
@@ -967,11 +963,12 @@
                 
                 editingProductId = null;
             } else {
+                const docRef = await addDoc(collection(db, 'products'), newProduct);
+                newProduct.docId = docRef.id;
                 products.push(newProduct);
                 productNames.add(productName);
                 if (storeName !== '-') stores.add(storeName);
                 if (brandName !== '-') brands.add(brandName);
-                saveData();
                 updateCompareOptions();
                 updateHistory();
                 setupAutoComplete();
@@ -1011,16 +1008,12 @@
         }
 
         // 탭 전환
-        function switchTab(tabName) {
-            // 모든 탭 버튼과 내용 초기화
+        function switchTabInternal(tabName) {
             document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
             document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
-            
-            // 선택된 탭 활성화
-            event.target.classList.add('active');
+            const idx = tabName === 'register' ? 0 : 1;
+            document.querySelectorAll('.tab-btn')[idx].classList.add('active');
             document.getElementById(tabName + '-tab').classList.add('active');
-            
-            // 데이터 관리 메뉴 숨기기
             document.getElementById('data-management').style.display = 'none';
         }
 
@@ -1156,7 +1149,7 @@
         }
 
         // 제품 삭제
-        function deleteProduct(productId) {
+        async function deleteProduct(productId) {
             console.log('삭제 함수 호출, ID:', productId);
             const product = products.find(p => p.id === productId);
             if (!product) {
@@ -1165,8 +1158,10 @@
             }
 
             if (confirm(`${product.brandName} (${product.storeName}) 정보를 삭제하시겠습니까?`)) {
+                if (product.docId) {
+                    await deleteDoc(doc(db, 'products', product.docId));
+                }
                 products = products.filter(p => p.id !== productId);
-                saveData();
                 showComparison();
                 updateCompareOptions();
                 updateHistory();
@@ -1207,6 +1202,7 @@
                         `<div class="suggestion-item">
                             <div class="suggestion-item-with-delete">
                                 <span class="suggestion-text" onclick="selectSuggestion('store-name', '${item}', false)">${item}</span>
+                                <button class="delete-suggestion-btn" style="background:#007bff;" onclick="editStoreName('${item}')">수정</button>
                                 <button class="delete-suggestion-btn" onclick="deleteStoreName('${item}')">삭제</button>
                             </div>
                         </div>`
@@ -1275,22 +1271,31 @@
             }
         }
 
+        // 수퍼이름 수정 함수
+        function editStoreName(oldName) {
+            const newName = prompt(`"${oldName}" 을 새 이름으로 변경:`, oldName);
+            if (!newName || newName.trim() === '' || newName.trim() === oldName) return;
+            const trimmed = newName.trim();
+            products = products.map(p => p.storeName === oldName ? {...p, storeName: trimmed} : p);
+            stores.delete(oldName);
+            stores.add(trimmed);
+            saveData();
+            updateCompareOptions();
+            setupAutoComplete();
+            document.getElementById('store-suggestions').style.display = 'none';
+            alert(`"${oldName}" → "${trimmed}" 변경되었습니다.`);
+        }
+
         // 수퍼이름 삭제 함수
         function deleteStoreName(storeName) {
             if (confirm(`"${storeName}" 수퍼이름과 관련된 모든 자료가 삭제됩니다.\n\n확인하시겠습니까?`)) {
-                // 해당 수퍼이름의 모든 상품 삭제
                 products = products.filter(p => p.storeName !== storeName);
                 stores.delete(storeName);
-                
-                // 데이터 저장 및 UI 업데이트
                 saveData();
                 updateCompareOptions();
                 updateHistory();
                 setupAutoComplete();
-                
-                // 드롭다운 닫기
                 document.getElementById('store-suggestions').style.display = 'none';
-                
                 alert(`"${storeName}" 수퍼이름과 관련된 모든 자료가 삭제되었습니다.`);
             }
         }
@@ -1314,6 +1319,20 @@
                 alert(`"${brandName}" 상품명과 관련된 모든 자료가 삭제되었습니다.`);
             }
         }
+        // Firebase 이전 함수
+        async function migrateToFirebase() {
+            if (!confirm(`localStorage의 ${products.length}개 제품을 Firebase로 이전하시겠습니까?`)) return;
+            let count = 0;
+            for (const product of products) {
+                if (!product.docId) {
+                    const docRef = await addDoc(collection(db, 'products'), product);
+                    product.docId = docRef.id;
+                    count++;
+                }
+            }
+            alert(`${count}개 제품이 Firebase로 이전되었습니다.`);
+        }
+
         // 데이터 관리 메뉴 토글
         function toggleDataManagement() {
             const menu = document.getElementById('data-management');
@@ -1417,6 +1436,27 @@
             // 파일 입력 초기화
             event.target.value = '';
         }
+        document.addEventListener('switchTab', e => switchTabInternal(e.detail));
+        document.addEventListener('registerProduct', () => registerProduct());
+        document.addEventListener('clearSearch', () => clearSearch());
+        document.addEventListener('toggleProductList', () => toggleProductList());
+        document.addEventListener('toggleStoreList', () => toggleStoreList());
+        document.addEventListener('toggleBrandList', () => toggleBrandList());
+        document.addEventListener('toggleDataManagement', () => toggleDataManagement());
+        document.addEventListener('handleRestore', () => handleRestore());
+        document.addEventListener('closeRestoreModal', () => closeRestoreModal());
+        document.addEventListener('confirmRestore', () => confirmRestore());
+        document.addEventListener('exportData', () => exportData());
+        document.addEventListener('selectSuggestion', e => selectSuggestion(e.detail.a, e.detail.b, e.detail.c));
+        document.addEventListener('deleteProductName', e => deleteProductName(e.detail));
+        document.addEventListener('editStoreName', e => editStoreName(e.detail));
+        document.addEventListener('deleteStoreName', e => deleteStoreName(e.detail));
+        document.addEventListener('deleteBrandName', e => deleteBrandName(e.detail));
+        document.addEventListener('selectSearchItem', e => selectSearchItem(e.detail));
+        document.addEventListener('showComparison', () => showComparison());
+        document.addEventListener('migrateToFirebase', () => migrateToFirebase());
+        document.addEventListener('importData', e => importData(e.detail));
+
         window.onload = function() {
             // 3초 후 초기 화면 숨기고 메인 앱 표시
             setTimeout(() => {
@@ -1427,12 +1467,14 @@
             }, 3000);
             
 
-            loadData();
-            setupCalculation();
-            setupAutoComplete();
-            updateCompareOptions();
-            updateHistory();
-            initSearch();
+            loadData().then(() => {
+                setupCalculation();
+                setupAutoComplete();
+                updateCompareOptions();
+                updateHistory();
+                initSearch();
+            });
+            
 
             // 입력 필드 20자 제한 (실시간)
             document.getElementById('product-name').addEventListener('input', function(e) {
@@ -1464,6 +1506,28 @@
                 });
             });
         };
+    </script>
+    <script>
+        function switchTab(t) { document.dispatchEvent(new CustomEvent('switchTab', {detail: t})); }
+        function registerProduct() { document.dispatchEvent(new CustomEvent('registerProduct')); }
+        function clearSearch() { document.dispatchEvent(new CustomEvent('clearSearch')); }
+        function toggleProductList() { document.dispatchEvent(new CustomEvent('toggleProductList')); }
+        function toggleStoreList() { document.dispatchEvent(new CustomEvent('toggleStoreList')); }
+        function toggleBrandList() { document.dispatchEvent(new CustomEvent('toggleBrandList')); }
+        function toggleDataManagement() { document.dispatchEvent(new CustomEvent('toggleDataManagement')); }
+        function handleRestore() { document.dispatchEvent(new CustomEvent('handleRestore')); }
+        function closeRestoreModal() { document.dispatchEvent(new CustomEvent('closeRestoreModal')); }
+        function confirmRestore() { document.dispatchEvent(new CustomEvent('confirmRestore')); }
+        function exportData() { document.dispatchEvent(new CustomEvent('exportData')); }
+        function selectSuggestion(a,b,c) { document.dispatchEvent(new CustomEvent('selectSuggestion', {detail:{a,b,c}})); }
+        function deleteProductName(n) { document.dispatchEvent(new CustomEvent('deleteProductName', {detail: n})); }
+        function editStoreName(n) { document.dispatchEvent(new CustomEvent('editStoreName', {detail: n})); }
+        function deleteStoreName(n) { document.dispatchEvent(new CustomEvent('deleteStoreName', {detail: n})); }
+        function deleteBrandName(n) { document.dispatchEvent(new CustomEvent('deleteBrandName', {detail: n})); }
+        function selectSearchItem(n) { document.dispatchEvent(new CustomEvent('selectSearchItem', {detail: n})); }
+        function showComparison() { document.dispatchEvent(new CustomEvent('showComparison')); }
+        function migrateToFirebase() { document.dispatchEvent(new CustomEvent('migrateToFirebase')); }
+        function importData(e) { document.dispatchEvent(new CustomEvent('importData', {detail: e})); }
     </script>
 </body>
 </html>
