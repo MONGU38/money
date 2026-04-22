@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
+    <link rel="manifest" href="/moneyblack/manifest.json">
+<meta name="theme-color" content="#ff6b35">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>머니앱 - 가격 비교</title>
@@ -1530,5 +1532,6 @@
         function migrateToFirebase() { document.dispatchEvent(new CustomEvent('migrateToFirebase')); }
         function importData(e) { document.dispatchEvent(new CustomEvent('importData', {detail: e})); }
     </script>
+    <script>if('serviceWorker' in navigator) navigator.serviceWorker.register('/moneyblack/sw.js');</script>
 </body>
 </html>
