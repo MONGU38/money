@@ -1,0 +1,8 @@
+[{
+      "relation": ["delegate_permission/common.handle_all_urls"],
+      "target": {
+        "namespace": "android_app",
+        "package_name": "io.github.mongu38.moneyblack",
+        "sha256_cert_fingerprints": ["78:63:75:04:C2:BF:D4:0C:49:7F:BA:F9:C8:AC:16:99:49:E1:49:9F:39:46:AA:35:FC:0C:79:32:A3:D5:F4:D3"]
+      }
+    }]
