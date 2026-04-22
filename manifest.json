@@ -1,0 +1,21 @@
+{
+  "name": "머니앱",
+  "short_name": "머니앱",
+  "start_url": "/moneyblack/",
+  "display": "standalone",
+  "background_color": "#1a1a2e",
+  "theme_color": "#ff6b35",
+  "description": "똑똑한 가격 비교로 매일매일 돈을 버세요",
+  "icons": [
+    {
+      "src": "https://mongu38.github.io/moneyblack/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "https://mongu38.github.io/moneyblack/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
