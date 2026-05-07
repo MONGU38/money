@@ -708,7 +708,7 @@
                     `<div class="search-item" onclick="selectSearchItem('${item.id}')">
                         <div>${item.productName} - ${item.storeName}</div>
                         <div style="font-size: 11px; color: #999; margin-top: 4px;">
-                            ${item.brandName} | ${item.volume}${item.unit} / ${parseInt(item.price).toLocaleString()}원${item.quantityUnitPrice > 0 ? ' | 개당 ' + item.quantityUnitPrice + '원' : ''}
+                            ${item.brandName} | ${item.volume}${item.unit} / ${parseInt(item.price).toLocaleString()}원${item.unitPrice > 0 ? ' | 단위당 ' + item.unitPrice + '원/' + item.unit : ''}${item.quantityUnitPrice > 0 ? ' | 개당 ' + item.quantityUnitPrice + '원' : ''}
                         </div>
                     </div>`
                 ).join('');
@@ -734,7 +734,12 @@
             try {
                 const snapshot = await getDocs(collection(db, 'products'));
                 products = [];
-                snapshot.forEach(d => products.push({...d.data(), docId: d.id}));
+                snapshot.forEach(d => {
+                    const data = d.data();
+                    if (data.quantityUnitPrice === undefined) data.quantityUnitPrice = 0;
+                    if (data.unitPrice === undefined) data.unitPrice = 0;
+                    products.push({...data, docId: d.id});
+                });
                 productNames = new Set(products.map(p => p.productName));
                 stores = new Set(products.map(p => p.storeName).filter(s => s !== '-'));
                 brands = new Set(products.map(p => p.brandName).filter(b => b !== '-'));
