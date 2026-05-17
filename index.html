@@ -608,6 +608,8 @@
                     <button onclick="toggleDataManagement()" style="padding: 8px 16px; background: #6c757d; color: white; border: none; border-radius: 6px; font-size: 11px; font-weight: 500;">데이터 관리</button>
                     <div id="data-management" style="display: none; margin-top: 10px;">
                         <button onclick="migrateToFirebase()" style="padding: 10px 16px; background: #ff6b35; color: white; border: none; border-radius: 8px; font-size: 12px; font-weight: 500; margin-right: 10px;">☁️ Firebase이전</button>
+                        <button onclick="exportData()" style="padding: 10px 16px; background: #28a745; color: white; border: none; border-radius: 8px; font-size: 12px; font-weight: 500; margin-right: 10px;">💾 백업</button>
+                        <button onclick="handleRestore()" style="padding: 10px 16px; background: #007bff; color: white; border: none; border-radius: 8px; font-size: 12px; font-weight: 500;">📂 복원</button>
                     </div>
                 </div>
                 <div class="history-section" id="history-section" style="display: none;">
@@ -653,7 +655,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
         import { getFirestore, collection, getDocs, addDoc, updateDoc, deleteDoc, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-        import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+        import { getAuth, signInWithPopup, GoogleAuthProvider } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyCvadpeZD7M234Z01h2C0oFgzYnXaDDuzs",
@@ -667,7 +669,7 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
         const auth = getAuth(app);
-        signInAnonymously(auth).catch(e => console.error('익명 로그인 실패:', e));
+        const provider = new GoogleAuthProvider();
         // 전역 변수
         let products = [];
         let productNames = new Set();
@@ -1469,22 +1471,21 @@
         document.addEventListener('importData', e => importData(e.detail));
 
         window.onload = function() {
-            // 3초 후 초기 화면 숨기고 메인 앱 표시
-            setTimeout(() => {
+            signInWithPopup(auth, provider).then(() => {
                 document.getElementById('splash-screen').style.display = 'none';
                 document.getElementById('main-app').style.display = 'block';
-                // 데이터 관리 메뉴 확실히 숨기기
                 document.getElementById('data-management').style.display = 'none';
-            }, 3000);
+                loadData().then(() => {
+                    setupCalculation();
+                    setupAutoComplete();
+                    updateCompareOptions();
+                    updateHistory();
+                    initSearch();
+                });
+            }).catch(e => console.error('구글 로그인 실패:', e));
             
 
-            loadData().then(() => {
-                setupCalculation();
-                setupAutoComplete();
-                updateCompareOptions();
-                updateHistory();
-                initSearch();
-            });
+            
             
 
             // 입력 필드 20자 제한 (실시간)
