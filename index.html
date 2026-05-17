@@ -655,7 +655,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
         import { getFirestore, collection, getDocs, addDoc, updateDoc, deleteDoc, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-        import { getAuth, signInWithPopup, GoogleAuthProvider } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+        import { getAuth, signInWithRedirect, onAuthStateChanged, GoogleAuthProvider } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyCvadpeZD7M234Z01h2C0oFgzYnXaDDuzs",
@@ -1471,18 +1471,24 @@
         document.addEventListener('importData', e => importData(e.detail));
 
         window.onload = function() {
-            signInWithPopup(auth, provider).then(() => {
-                document.getElementById('splash-screen').style.display = 'none';
-                document.getElementById('main-app').style.display = 'block';
-                document.getElementById('data-management').style.display = 'none';
-                loadData().then(() => {
-                    setupCalculation();
-                    setupAutoComplete();
-                    updateCompareOptions();
-                    updateHistory();
-                    initSearch();
-                });
-            }).catch(e => console.error('구글 로그인 실패:', e));
+            onAuthStateChanged(auth, user => {
+                if (user) {
+                    setTimeout(() => {
+                        document.getElementById('splash-screen').style.display = 'none';
+                        document.getElementById('main-app').style.display = 'block';
+                        document.getElementById('data-management').style.display = 'none';
+                        loadData().then(() => {
+                            setupCalculation();
+                            setupAutoComplete();
+                            updateCompareOptions();
+                            updateHistory();
+                            initSearch();
+                        });
+                    }, 3000);
+                } else {
+                    signInWithRedirect(auth, provider);
+                }
+            });
             
 
             
