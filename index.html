@@ -655,7 +655,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
         import { getFirestore, collection, getDocs, addDoc, updateDoc, deleteDoc, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-        import { getAuth, signInWithRedirect, onAuthStateChanged, GoogleAuthProvider, browserLocalPersistence, setPersistence } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+        import { getAuth, signInWithRedirect, getRedirectResult, onAuthStateChanged, GoogleAuthProvider, browserLocalPersistence, setPersistence } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyCvadpeZD7M234Z01h2C0oFgzYnXaDDuzs",
@@ -1473,21 +1473,23 @@
 
         window.onload = function() {
             setPersistence(auth, browserLocalPersistence).then(() => {
-                onAuthStateChanged(auth, user => {
-                    if (user) {
-                        document.getElementById('splash-screen').style.display = 'none';
-                        document.getElementById('main-app').style.display = 'block';
-                        document.getElementById('data-management').style.display = 'none';
-                        loadData().then(() => {
-                            setupCalculation();
-                            setupAutoComplete();
-                            updateCompareOptions();
-                            updateHistory();
-                            initSearch();
-                        });
-                    } else {
-                        signInWithRedirect(auth, provider);
-                    }
+                getRedirectResult(auth).then(result => {
+                    onAuthStateChanged(auth, user => {
+                        if (user) {
+                            document.getElementById('splash-screen').style.display = 'none';
+                            document.getElementById('main-app').style.display = 'block';
+                            document.getElementById('data-management').style.display = 'none';
+                            loadData().then(() => {
+                                setupCalculation();
+                                setupAutoComplete();
+                                updateCompareOptions();
+                                updateHistory();
+                                initSearch();
+                            });
+                        } else {
+                            signInWithRedirect(auth, provider);
+                        }
+                    });
                 });
             });
             
