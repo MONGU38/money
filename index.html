@@ -1472,23 +1472,23 @@
         document.addEventListener('importData', e => importData(e.detail));
 
         window.onload = function() {
-            onAuthStateChanged(auth, user => {
-                if (user) {
-                    document.getElementById('splash-screen').style.display = 'none';
-                    document.getElementById('main-app').style.display = 'block';
-                    document.getElementById('data-management').style.display = 'none';
-                    loadData().then(() => {
-                        setupCalculation();
-                        setupAutoComplete();
-                        updateCompareOptions();
-                        updateHistory();
-                        initSearch();
-                    });
-                } else {
-                    setPersistence(auth, browserLocalPersistence).then(() => {
+            setPersistence(auth, browserLocalPersistence).then(() => {
+                onAuthStateChanged(auth, user => {
+                    if (user) {
+                        document.getElementById('splash-screen').style.display = 'none';
+                        document.getElementById('main-app').style.display = 'block';
+                        document.getElementById('data-management').style.display = 'none';
+                        loadData().then(() => {
+                            setupCalculation();
+                            setupAutoComplete();
+                            updateCompareOptions();
+                            updateHistory();
+                            initSearch();
+                        });
+                    } else {
                         signInWithRedirect(auth, provider);
-                    });
-                }
+                    }
+                });
             });
             
 
