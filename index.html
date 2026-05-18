@@ -1471,66 +1471,61 @@
         document.addEventListener('migrateToFirebase', () => migrateToFirebase());
         document.addEventListener('importData', e => importData(e.detail));
 
-        window.onload = function() {
-            setPersistence(auth, browserLocalPersistence).then(() => {
-                getRedirectResult(auth).then(result => {
-                    onAuthStateChanged(auth, user => {
-                        if (user) {
-                            sessionStorage.removeItem('redirecting');
-                            document.getElementById('splash-screen').style.display = 'none';
-                            document.getElementById('main-app').style.display = 'block';
-                            document.getElementById('data-management').style.display = 'none';
-                            loadData().then(() => {
-                                setupCalculation();
-                                setupAutoComplete();
-                                updateCompareOptions();
-                                updateHistory();
-                                initSearch();
-                            });
-                        } else {
-                            if (!sessionStorage.getItem('redirecting')) {
-                                sessionStorage.setItem('redirecting', '1');
-                                signInWithRedirect(auth, provider);
-                            }
+        setPersistence(auth, browserLocalPersistence).then(() => {
+            getRedirectResult(auth).then(result => {
+                onAuthStateChanged(auth, user => {
+                    if (user) {
+                        sessionStorage.removeItem('redirecting');
+                        document.getElementById('splash-screen').style.display = 'none';
+                        document.getElementById('main-app').style.display = 'block';
+                        document.getElementById('data-management').style.display = 'none';
+                        loadData().then(() => {
+                            setupCalculation();
+                            setupAutoComplete();
+                            updateCompareOptions();
+                            updateHistory();
+                            initSearch();
+                        });
+                    } else {
+                        if (!sessionStorage.getItem('redirecting')) {
+                            sessionStorage.setItem('redirecting', '1');
+                            signInWithRedirect(auth, provider);
                         }
-                    });
+                    }
                 });
             });
-            
+        });
 
-            
-            
+        // 입력 필드 20자 제한 (실시간)
+        document.getElementById('product-name').addEventListener('input', function(e) {
+            if (this.value.length > 20) {
+                this.value = this.value.substring(0, 20);
+            }
+        });
 
-            // 입력 필드 20자 제한 (실시간)
-            document.getElementById('product-name').addEventListener('input', function(e) {
-                if (this.value.length > 20) {
-                    this.value = this.value.substring(0, 20);
-                }
+        document.getElementById('store-name').addEventListener('input', function(e) {
+            if (this.value.length > 20) {
+                this.value = this.value.substring(0, 20);
+            }
+        });
+
+        document.getElementById('brand-name').addEventListener('input', function(e) {
+            if (this.value.length > 20) {
+                this.value = this.value.substring(0, 20);
+            }
+        });
+
+        // 드롭다운 터치 이벤트 개선
+        document.querySelectorAll('.dropdown-arrow').forEach(arrow => {
+            arrow.addEventListener('touchend', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                const toggle = this.getAttribute('data-toggle');
+                if (toggle === 'product') toggleProductList();
+                else if (toggle === 'store') toggleStoreList();
+                else if (toggle === 'brand') toggleBrandList();
             });
-            
-            document.getElementById('store-name').addEventListener('input', function(e) {
-                if (this.value.length > 20) {
-                    this.value = this.value.substring(0, 20);
-                }
-            });
-            
-            document.getElementById('brand-name').addEventListener('input', function(e) {
-                if (this.value.length > 20) {
-                    this.value = this.value.substring(0, 20);
-                }
-            });
-            // 드롭다운 터치 이벤트 개선
-            document.querySelectorAll('.dropdown-arrow').forEach(arrow => {
-                arrow.addEventListener('touchend', function(e) {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    const toggle = this.getAttribute('data-toggle');
-                    if (toggle === 'product') toggleProductList();
-                    else if (toggle === 'store') toggleStoreList();
-                    else if (toggle === 'brand') toggleBrandList();
-                });
-            });
-        };
+        });
     </script>
     <script>
         function switchTab(t) { document.dispatchEvent(new CustomEvent('switchTab', {detail: t})); }
