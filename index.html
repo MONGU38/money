@@ -1476,6 +1476,7 @@
                 getRedirectResult(auth).then(result => {
                     onAuthStateChanged(auth, user => {
                         if (user) {
+                            sessionStorage.removeItem('redirecting');
                             document.getElementById('splash-screen').style.display = 'none';
                             document.getElementById('main-app').style.display = 'block';
                             document.getElementById('data-management').style.display = 'none';
@@ -1487,7 +1488,10 @@
                                 initSearch();
                             });
                         } else {
-                            signInWithRedirect(auth, provider);
+                            if (!sessionStorage.getItem('redirecting')) {
+                                sessionStorage.setItem('redirecting', '1');
+                                signInWithRedirect(auth, provider);
+                            }
                         }
                     });
                 });
