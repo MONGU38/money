@@ -1549,6 +1549,12 @@
         function migrateToFirebase() { document.dispatchEvent(new CustomEvent('migrateToFirebase')); }
         function importData(e) { document.dispatchEvent(new CustomEvent('importData', {detail: e})); }
     </script>
-    <script>if('serviceWorker' in navigator) navigator.serviceWorker.register('/moneyblack/sw.js');</script>
+    <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.getRegistrations().then(function(regs) {
+        regs.forEach(function(reg) { reg.unregister(); });
+      });
+    }
+    </script>
 </body>
 </html>
