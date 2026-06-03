@@ -493,6 +493,7 @@
             <div class="tab-buttons">
                 <button class="tab-btn active" onclick="switchTab('register')">제품등록</button>
                 <button class="tab-btn" onclick="switchTab('compare')">전체비교</button>
+                <button class="tab-btn" onclick="switchTab('favorite')">❤️즐겨찾기</button>
             </div>
 
             <div id="register-tab" class="tab-content active">
@@ -579,6 +580,15 @@
                     <div class="empty-state">
                         <div style="font-size: 48px; margin-bottom: 16px;">🛒</div>
                         <p>제품을 선택하고 비교해보세요!</p>
+                    </div>
+                </div>
+            </div>
+
+            <div id="favorite-tab" class="tab-content">
+                <div class="comparison-results" id="favorite-results">
+                    <div class="empty-state">
+                        <div style="font-size: 48px; margin-bottom: 16px;">❤️</div>
+                        <p>즐겨찾기한 항목이 없습니다.</p>
                     </div>
                 </div>
             </div>
@@ -825,10 +835,11 @@
         function switchTab(tabName) {
             document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
             document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
-            const idx = tabName === 'register' ? 0 : 1;
+            const idx = tabName === 'register' ? 0 : tabName === 'compare' ? 1 : 2;
             document.querySelectorAll('.tab-btn')[idx].classList.add('active');
             document.getElementById(tabName + '-tab').classList.add('active');
             document.getElementById('data-management').style.display = 'none';
+            if (tabName === 'favorite') showFavorites();
         }
 
         function updateCompareOptions() {
@@ -840,6 +851,54 @@
 
         function updateHistory() {
             document.getElementById('history-section').style.display = 'none';
+        }
+
+        function renderProductItem(product, index, showBest) {
+            const isFav = product.favorite === true;
+            return `
+                <div class="result-item ${showBest && index === 0 && product.unitPrice > 0 ? 'best' : ''}" data-product-id="${product.id}">
+                    <div class="result-header">
+                        <div>
+                            <span class="result-store">${product.storeName}</span>
+                            ${showBest && index === 0 && product.unitPrice > 0 ? '<span class="best-badge">최저가</span>' : ''}
+                        </div>
+                        <div style="display:flex; align-items:center; gap:8px;">
+                            <button class="fav-btn" data-id="${product.id}" type="button" style="background:none; border:none; font-size:20px; cursor:pointer; padding:0;">${isFav ? '❤️' : '🤍'}</button>
+                            <div class="result-price">${product.unitPrice > 0 ? product.unitPrice + '원/' + (product.unit || 'ml') : '가격정보 없음'}</div>
+                        </div>
+                    </div>
+                    <div class="result-details">
+                        <span>${product.brandName} ${product.volume > 0 ? product.volume + (product.unit || 'ml') : ''}</span>
+                        <span>${product.price > 0 ? product.price + '원' : '가격정보 없음'}</span>
+                    </div>
+                    ${product.quantityUnitPrice > 0 ? `<div class="result-details" style="margin-top: 8px; color: #28a745; font-weight: 600;"><span>개당 금액: ${product.quantityUnitPrice}원/개</span><span>${product.quantity > 0 ? product.quantity + '개 ' + product.quantityPrice + '원' : ''}</span></div>` : ''}
+                    <div class="result-actions">
+                        <button class="edit-btn" data-id="${product.id}" type="button">수정</button>
+                        <button class="delete-btn" data-id="${product.id}" type="button">삭제</button>
+                    </div>
+                </div>
+            `;
+        }
+
+        function bindItemEvents(container) {
+            container.querySelectorAll('.fav-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const id = parseInt(this.getAttribute('data-id'));
+                    const product = products.find(p => p.id === id);
+                    if (product) {
+                        product.favorite = !product.favorite;
+                        saveData();
+                        showComparison();
+                        showFavorites();
+                    }
+                });
+            });
+            container.querySelectorAll('.edit-btn').forEach(btn => {
+                btn.addEventListener('click', function() { editProduct(parseInt(this.getAttribute('data-id'))); });
+            });
+            container.querySelectorAll('.delete-btn').forEach(btn => {
+                btn.addEventListener('click', function() { deleteProduct(parseInt(this.getAttribute('data-id'))); });
+            });
         }
 
         function showComparison() {
@@ -855,32 +914,19 @@
                 return;
             }
             relatedProducts.sort((a, b) => a.unitPrice - b.unitPrice);
-            resultsContainer.innerHTML = relatedProducts.map((product, index) => `
-                <div class="result-item ${index === 0 && product.unitPrice > 0 ? 'best' : ''}" data-product-id="${product.id}">
-                    <div class="result-header">
-                        <div>
-                            <span class="result-store">${product.storeName}</span>
-                            ${index === 0 && product.unitPrice > 0 ? '<span class="best-badge">최저가</span>' : ''}
-                        </div>
-                        <div class="result-price">${product.unitPrice > 0 ? product.unitPrice + '원/' + (product.unit || 'ml') : '가격정보 없음'}</div>
-                    </div>
-                    <div class="result-details">
-                        <span>${product.brandName} ${product.volume > 0 ? product.volume + (product.unit || 'ml') : ''}</span>
-                        <span>${product.price > 0 ? product.price + '원' : '가격정보 없음'}</span>
-                    </div>
-                    ${product.quantityUnitPrice > 0 ? `<div class="result-details" style="margin-top: 8px; color: #28a745; font-weight: 600;"><span>개당 금액: ${product.quantityUnitPrice}원/개</span><span>${product.quantity > 0 ? product.quantity + '개 ' + product.quantityPrice + '원' : ''}</span></div>` : ''}
-                    <div class="result-actions">
-                        <button class="edit-btn" data-id="${product.id}" type="button">수정</button>
-                        <button class="delete-btn" data-id="${product.id}" type="button">삭제</button>
-                    </div>
-                </div>
-            `).join('');
-            resultsContainer.querySelectorAll('.edit-btn').forEach(btn => {
-                btn.addEventListener('click', function() { editProduct(parseInt(this.getAttribute('data-id'))); });
-            });
-            resultsContainer.querySelectorAll('.delete-btn').forEach(btn => {
-                btn.addEventListener('click', function() { deleteProduct(parseInt(this.getAttribute('data-id'))); });
-            });
+            resultsContainer.innerHTML = relatedProducts.map((product, index) => renderProductItem(product, index, true)).join('');
+            bindItemEvents(resultsContainer);
+        }
+
+        function showFavorites() {
+            const resultsContainer = document.getElementById('favorite-results');
+            const favProducts = products.filter(p => p.favorite === true);
+            if (favProducts.length === 0) {
+                resultsContainer.innerHTML = `<div class="empty-state"><div style="font-size: 48px; margin-bottom: 16px;">❤️</div><p>즐겨찾기한 항목이 없습니다.</p></div>`;
+                return;
+            }
+            resultsContainer.innerHTML = favProducts.map((product, index) => renderProductItem(product, index, false)).join('');
+            bindItemEvents(resultsContainer);
         }
 
         function editProduct(productId) {
