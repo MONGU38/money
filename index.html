@@ -1110,6 +1110,16 @@
                 document.getElementById('data-management').style.display = 'none';
             }, 3000);
 
+            history.pushState({tab: 'register'}, '', '');
+            window.addEventListener('popstate', function(e) {
+                const activeTab = document.querySelector('.tab-btn.active');
+                const activeIdx = Array.from(document.querySelectorAll('.tab-btn')).indexOf(activeTab);
+                if (activeIdx > 0) {
+                    history.pushState({tab: 'register'}, '', '');
+                    switchTab('register');
+                }
+            });
+
             loadData();
             setupCalculation();
             setupAutoComplete();
